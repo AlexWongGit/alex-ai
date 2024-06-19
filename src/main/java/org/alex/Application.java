@@ -1,12 +1,14 @@
 package org.alex;
 
-import org.alex.entity.User;
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+@SpringBootApplication(scanBasePackages = {"org.alex"})
+@MapperScan(basePackages = {"org.alex.mapper"})
 public class Application {
 
     public static void main(String[] args) {
-        User user = new User("alex","12345");
-        System.out.println(user.name());
-        System.out.println(user.password());
+        SpringApplication.run(Application.class, args);
     }
 }

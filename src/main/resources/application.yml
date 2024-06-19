@@ -1,0 +1,14 @@
+server:
+  port: 6019
+spring:
+  application:
+    name: alex-ai
+#  ai:
+#   ollama:
+#     base-url: http://150.158.76.169:11434
+#     chat:
+#       enable: true
+#       options:
+#         model: qwen:0.5b
+ai:
+  api_key: sk-2e0fd07d52504d1d8cf5d29d125e2e0f

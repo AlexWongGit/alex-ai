@@ -7,8 +7,6 @@ package org.alex.entity;
  */
 public record User(String name, String password) implements Comparable<User>{
 
-
-
     @Override
     public int compareTo(User o) {
         return 0;
