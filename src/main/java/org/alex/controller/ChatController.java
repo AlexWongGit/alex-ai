@@ -5,10 +5,14 @@ import com.alibaba.dashscope.aigc.generation.Generation;
 import com.alibaba.dashscope.aigc.generation.GenerationParam;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.Message;
+import com.alibaba.dashscope.common.ResultCallback;
 import com.alibaba.dashscope.common.Role;
+import io.reactivex.Flowable;
 import org.alex.entity.Dto;
 import org.alex.service.PoetryService;
 
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -79,6 +83,27 @@ public class ChatController {
                 .enableSearch(true)
                 .build();
         GenerationResult generationResult =generation.call(param);
+/*        Flowable<GenerationResult> generationResultFlowable = generation.streamCall(param);
+        generation.streamCall(param, new ResultCallback<GenerationResult>() {
+
+            @Override
+            public void onEvent(GenerationResult generationResult) {
+                // 处理每个GenerationResult对象
+                System.out.println("Received: " + generationResult.getOutput().getChoices().get(0).getMessage().getContent());
+
+            }
+
+            @Override
+            public void onError(Exception e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {
+                // 数据流完成
+                System.out.println("Generation completed.");
+            }
+        });*/
         return generationResult.getOutput().getChoices().get(0).getMessage().getContent();
 
     }

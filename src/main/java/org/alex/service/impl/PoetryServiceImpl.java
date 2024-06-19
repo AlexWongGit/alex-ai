@@ -11,15 +11,16 @@ public class PoetryServiceImpl implements PoetryService {
         haiku should start with the word cat obligatory""";
 
 
-    private final AiClient aiClient;
+ /*   private final AiClient aiClient;
 
     public PoetryServiceImpl(AiClient aiClient) {
         this.aiClient = aiClient;
     }
-
+*/
     @Override
     public String getCatHaiku() {
-        return aiClient.generate(WRITE_ME_HAIKU_ABOUT_CAT);
+        return null;
+        //return aiClient.generate(WRITE_ME_HAIKU_ABOUT_CAT);
     }
 
 }
