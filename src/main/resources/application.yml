@@ -3,23 +3,22 @@ server:
 spring:
   application:
     name: alex-ai
-  datasource:
-    url: jdbc:mysql://127.0.0.1:3306/alex_ai?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
-    password: 12345678
-    driver-class-name: com.mysql.cj.jdbc.Driver
   ai:
     ollama:
-      base-url: http://150.158.76.169:11434
+      base-url: http://192.168.100.179:11434
       chat:
-        enable: true
         options:
-          model: qwen:0.5b
+          model: deepseek-r1:1.5b
+          temperature: 0.7
+          #model: qwen:0.5b
+    openai:
+      api-key: sk-2e0fd07d52504d1d8cf5d29d125e2e0f
 ai:
   api_key: sk-2e0fd07d52504d1d8cf5d29d125e2e0f
-rocketmq:
-  name-server: 127.0.0.1:9876
-  producer:
-    group: alexAiProducer
-  consumer:
-    group: alexAiConsumer
+  # api_key: sk-6c075959f19a467388c8741e0955785c
+# rocketmq:
+#   name-server: 127.0.0.1:9876
+#   producer:
+#     group: alexAiProducer
+#   consumer:
+#     group: alexAiConsumer

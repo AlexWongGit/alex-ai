@@ -1,21 +1,18 @@
 package org.alex.controller;
 
 
-import com.alibaba.dashscope.aigc.generation.Generation;
-import com.alibaba.dashscope.aigc.generation.GenerationParam;
-import com.alibaba.dashscope.aigc.generation.GenerationResult;
-import com.alibaba.dashscope.common.Message;
-import com.alibaba.dashscope.common.ResultCallback;
-import com.alibaba.dashscope.common.Role;
-import io.reactivex.Flowable;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
 import org.alex.entity.Dto;
-import org.alex.service.PoetryService;
 
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.ollama.OllamaChatModel;
+import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -24,17 +21,25 @@ import java.util.*;
 @RequestMapping("ai")
 public class ChatController {
 
-    @Autowired
+  /*  @Autowired
     private PoetryService poetryService;
-
+*/
     @Value("${ai.api_key}")
     private String apiKey;
 
 
-    @GetMapping("/cathaiku")
+    private final OllamaChatModel chatModel;
+
+    @Autowired
+    public ChatController(OllamaChatModel chatModel) {
+        this.chatModel = chatModel;
+    }
+
+
+/*    @GetMapping("/cathaiku")
     public ResponseEntity<String> generateHaiku() {
         return ResponseEntity.ok(poetryService.getCatHaiku());
-    }
+    }*/
 
 /*    @GetMapping("/chat")
     public ResponseEntity<String> chat(String message) {
@@ -64,7 +69,7 @@ public class ChatController {
         });
     }*/
 
-    @PostMapping("ask")
+   /* @PostMapping("ask")
     public String ask(@RequestBody Dto dto) throws Exception {
 
         Generation generation = new Generation();
@@ -76,14 +81,15 @@ public class ChatController {
 
         GenerationParam param = GenerationParam.builder()
                 .model("qwen-turbo")
+                //.model("deepseek-chat")
                 .messages(Arrays.asList(userMessage))
                 .resultFormat(GenerationParam.ResultFormat.MESSAGE)
                 .topP(0.8)
                 .apiKey(apiKey)
                 .enableSearch(true)
                 .build();
-        GenerationResult generationResult =generation.call(param);
-/*        Flowable<GenerationResult> generationResultFlowable = generation.streamCall(param);
+        GenerationResult generationResult = generation.call(param);
+*//*        Flowable<GenerationResult> generationResultFlowable = generation.streamCall(param);
         generation.streamCall(param, new ResultCallback<GenerationResult>() {
 
             @Override
@@ -103,9 +109,49 @@ public class ChatController {
                 // 数据流完成
                 System.out.println("Generation completed.");
             }
-        });*/
+        });*//*
         return generationResult.getOutput().getChoices().get(0).getMessage().getContent();
 
+    }*/
+
+    @PostMapping("chat")
+    public String cc(@RequestBody Dto dto) throws Exception {
+        String baseUrl = "https://api.deepseek.com/chat/completions";
+        HashMap<String, String> headers = new HashMap<>(2);
+        headers.put("Authorization", "Bearer " + apiKey);
+        headers.put("Content-Type", "application/json");
+        String ask = new JSONObject()
+                .put("model", "deepseek-chat")
+                .put("frequency_penalty", 2)
+                .put("messages", new JSONArray()
+                        .put(new JSONObject()
+                                .put("role", "user")
+                                .put("content", dto.getAsk())))
+                .put("stream", false)
+                .toString();
+        HttpResponse httpResponse = HttpRequest.post(baseUrl).headerMap(headers, true).body(ask).execute();
+        if (httpResponse.isOk()) {
+            return httpResponse.body();
+        }
+        return null;
+    }
+
+
+    @PostMapping("deepseek")
+    public HashMap<Object, Object> deepseek(@RequestBody Dto dto) {
+        HashMap<Object, Object> map = new HashMap<>();
+        try {
+            OllamaOptions ollamaOptions = new OllamaOptions();
+            ollamaOptions.setModel("deepseek-chat");
+            ollamaOptions.setTemperature(0.4);
+
+            ChatResponse response = chatModel.call(
+                    new Prompt(dto.getAsk(), ollamaOptions));
+            map.put("deepseek", response);
+        } catch (Exception e) {
+            map.put("error", "请求发生错误：" + e.getMessage());
+        }
+        return map;
     }
 
 }
