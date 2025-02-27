@@ -7,7 +7,7 @@ spring:
     name: alex-ai
   ai:
     ollama:
-      base-url: http://192.168.100.179:11434
+      base-url: http://127.0.0.1:11434
       chat:
         options:
           model: deepseek-r1:1.5b
