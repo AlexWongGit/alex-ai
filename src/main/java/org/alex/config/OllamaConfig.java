@@ -3,11 +3,12 @@ package org.alex.config;
 import io.micrometer.observation.ObservationRegistry;
 import org.springframework.ai.model.tool.ToolCallingManager;
 import org.springframework.ai.ollama.OllamaChatModel;
+import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.ai.ollama.api.OllamaApi;
+import org.springframework.ai.ollama.api.OllamaModel;
 import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.ai.ollama.management.ModelManagementOptions;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -44,5 +45,17 @@ public class OllamaConfig {
                 ToolCallingManager.builder().build(),
                 ObservationRegistry.NOOP,
                 ModelManagementOptions.defaults());
+    }
+
+    @Bean
+    public OllamaEmbeddingModel ollamaClient() {
+        var ollamaApi = new OllamaApi(baseUrl);
+        return new OllamaEmbeddingModel(ollamaApi,
+                OllamaOptions.builder()
+                        .model(OllamaModel.NOMIC_EMBED_TEXT)
+                        .build(),
+                ObservationRegistry.NOOP,
+                ModelManagementOptions.defaults()
+                );
     }
 }
