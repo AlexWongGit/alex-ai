@@ -147,6 +147,9 @@ public class MilvusServiceImpl implements MilvusService {
                     .withPartitionName(FaceArchive.getPartitionName(orgId))
                     .withFields(fields)
                     .build();
+            if (!hasCollection(FaceArchive.COLLECTION_NAME)) {
+                createCollection(FaceArchive.COLLECTION_NAME, FaceArchive.FEATURE_DIM);
+            }
             R<MutationResult> insert = milvusServiceClient.insert(insertParam);
             log.info("插入:{}", insert);
         });
