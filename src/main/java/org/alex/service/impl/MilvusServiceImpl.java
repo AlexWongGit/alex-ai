@@ -224,7 +224,7 @@ public class MilvusServiceImpl implements MilvusService {
                 .data(Collections.singletonList(baseVector))
                 .topK(4)
                 // 指定搜索的过滤条件
-                .filter("archive_id>100")
+                //.filter("archive_id>100")
                 .metricType(IndexParam.MetricType.IP)
                 // 指定返回的字段
                 .outputFields(Collections.singletonList(MilvusConstants.Field.TEXT));
@@ -241,9 +241,18 @@ public class MilvusServiceImpl implements MilvusService {
                 && !searchResp.getSearchResults().get(0).isEmpty()
                 && searchResp.getSearchResults().get(0).get(0).getEntity() != null
         ) {
-            Map<String, Object> entity = searchResp.getSearchResults().get(0).get(0).getEntity();
-            log.info("搜索结果:{}", entity);
-            return gson.toJson(entity);
+            List<SearchResp.SearchResult> searchResults = searchResp.getSearchResults().get(0);
+            HashMap<String, Object> retMap = new HashMap<>();
+            for (SearchResp.SearchResult searchResult : searchResults) {
+                log.info("搜索结果:{}", searchResult.getEntity());
+                Map<String, Object> entity = searchResult.getEntity();
+                if (retMap.containsKey(MilvusConstants.Field.TEXT)) {
+                    retMap.put(MilvusConstants.Field.TEXT, retMap.get(MilvusConstants.Field.TEXT) + "," + entity.get(MilvusConstants.Field.TEXT));
+                } else {
+                    retMap.put(MilvusConstants.Field.TEXT, entity.get(MilvusConstants.Field.TEXT));
+                }
+            }
+            return gson.toJson(retMap);
         }
         return null;
     }
