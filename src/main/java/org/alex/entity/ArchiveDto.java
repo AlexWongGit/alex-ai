@@ -15,4 +15,6 @@ public class ArchiveDto {
 
     private Long archiveId;
     private byte[] arcsoftFeature;
+
+    private String text;
 }

@@ -32,10 +32,32 @@ public class FileServiceImpl implements FileService {
     @Override
     public Boolean uploadFileAndSaveToMilvus(String fileName, File file) {
         ArchiveDto archive = new ArchiveDto();
-        byte[] fileBytes = processFile(file);
+        String[] textArray;
+        // 从文件中提取文本
+        StringBuilder content = new StringBuilder();
+        int i = 0;
+        try (PDDocument document = PDDocument.load(file)) {
+            PDFTextStripper stripper = new PDFTextStripper();
+            String text = stripper.getText(document);
+            content.append(text);
+            //构造字符串数组，注意不要内存溢出
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+      /*  // 构造字符串数组，按段落拆分文本
+        String fullText = content.toString();
+        // 按空行拆分段落
+        textArray = fullText.split("\\n\\s*\\n");*/
+
+        // 生成嵌入向量
+        float[] embedding = embeddingModel.embed(content.toString());
+
+        byte[] fileBytes = MilvusUtil.convertEmbeddingsToBytes(Collections.singletonList(embedding));
         archive.setArchiveId(1L);
         archive.setArcsoftFeature(fileBytes);
         archive.setOrgId(1);
+        archive.setText(content.toString());
         return milvusService.insert(Collections.singletonList(archive));
     }
 
@@ -49,20 +71,5 @@ public class FileServiceImpl implements FileService {
             ret.put(fileName, isSuccess);
         }
         return ret;
-    }
-
-    private byte[] processFile(File file) {
-        // 从文件中提取文本
-        StringBuilder content = new StringBuilder();
-        try (PDDocument document = PDDocument.load(file)) {
-            PDFTextStripper stripper = new PDFTextStripper();
-            content.append(stripper.getText(document));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // 生成嵌入向量
-        float[] embedding = embeddingModel.embed(content.toString());
-
-        return MilvusUtil.convertEmbeddingsToBytes(Collections.singletonList(embedding));
     }
 }

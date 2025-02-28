@@ -74,6 +74,12 @@ public class MilvusServiceImpl implements MilvusService {
                 .dimension(featureDim)
                 .build());
 
+        schema.addField(AddFieldReq.builder()
+                .fieldName(MilvusConstants.Field.TEXT)
+                .dataType(DataType.VarChar)
+                .maxLength(8000)
+                .build());
+
         Map<String, Object> extraParams = new HashMap<>(1);
         extraParams.put("nlist", 16384);
 
@@ -90,9 +96,8 @@ public class MilvusServiceImpl implements MilvusService {
                 .numShards(MilvusConstants.SHARDS_NUM)
                 .primaryFieldName(MilvusConstants.Field.ARCHIVE_ID)
                 .vectorFieldName(MilvusConstants.Field.ARCHIVE_FEATURE)
-                .indexParam(indexParam)
+                .indexParams(Collections.singletonList(indexParam))
                 .collectionSchema(schema)
-                .enableDynamicField(true)
                 .build();
         client.createCollection(createCollectionReq);
     }
@@ -131,10 +136,11 @@ public class MilvusServiceImpl implements MilvusService {
             List<JsonObject> insertDatas = new ArrayList<>();
             for (ArchiveDto dto : list) {
                 JsonObject dict = new JsonObject();
-                dict.add(MilvusConstants.Field.ARCHIVE_ID, new JsonPrimitive(dto.getArchiveId()));
+                dict.addProperty(MilvusConstants.Field.ARCHIVE_ID, dto.getArchiveId());
                 dict.add(MilvusConstants.Field.ORG_ID, new JsonPrimitive(dto.getOrgId()));
                 List<Float> vectors = MilvusUtil.arcsoftToFloat(dto.getArcsoftFeature());
                 dict.add(MilvusConstants.Field.ARCHIVE_FEATURE, gson.toJsonTree(vectors));
+                dict.addProperty(MilvusConstants.Field.TEXT, dto.getText());
                 insertDatas.add(dict);
             }
             InsertReq insertReq = InsertReq.builder()
@@ -209,8 +215,9 @@ public class MilvusServiceImpl implements MilvusService {
         SearchReq.SearchReqBuilder<?, ?> builder = SearchReq.builder()
                 .collectionName(MilvusConstants.COLLECTION_NAME)
                 .data(Collections.singletonList(baseVector))
-                .topK(4)
-                .outputFields(Collections.singletonList("*"));
+                .topK(1)
+                .metricType(IndexParam.MetricType.IP)
+                .outputFields(Collections.singletonList(MilvusConstants.Field.TEXT));
 
         if (orgId != null) {
             //如果只需要搜索某个分区的数据,则需要指定分区
