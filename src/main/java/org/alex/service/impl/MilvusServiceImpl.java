@@ -59,10 +59,10 @@ public class MilvusServiceImpl implements MilvusService {
     public void createCollection(String collectionName, Integer featureDim) {
         CreateCollectionReq.CollectionSchema schema = client.createSchema();
         schema.addField(AddFieldReq.builder()
-                        .fieldName(MilvusConstants.Field.ARCHIVE_ID)
+                .fieldName(MilvusConstants.Field.ARCHIVE_ID)
                 .dataType(DataType.Int64)
                 .isPrimaryKey(true)
-                .autoID(false)
+                .autoID(true)
                 .description("主键id").build());
         schema.addField(AddFieldReq.builder()
                 .fieldName(MilvusConstants.Field.ORG_ID)
@@ -77,7 +77,13 @@ public class MilvusServiceImpl implements MilvusService {
         schema.addField(AddFieldReq.builder()
                 .fieldName(MilvusConstants.Field.TEXT)
                 .dataType(DataType.VarChar)
-                .maxLength(8000)
+                .maxLength(65535)
+                .build());
+
+        schema.addField(AddFieldReq.builder()
+                .fieldName(MilvusConstants.Field.FILE_NAME)
+                .dataType(DataType.VarChar)
+                .maxLength(256)
                 .build());
 
         Map<String, Object> extraParams = new HashMap<>(1);
@@ -136,11 +142,12 @@ public class MilvusServiceImpl implements MilvusService {
             List<JsonObject> insertDatas = new ArrayList<>();
             for (ArchiveDto dto : list) {
                 JsonObject dict = new JsonObject();
-                dict.addProperty(MilvusConstants.Field.ARCHIVE_ID, dto.getArchiveId());
+                //dict.addProperty(MilvusConstants.Field.ARCHIVE_ID, dto.getArchiveId());
                 dict.add(MilvusConstants.Field.ORG_ID, new JsonPrimitive(dto.getOrgId()));
                 List<Float> vectors = MilvusUtil.arcsoftToFloat(dto.getArcsoftFeature());
                 dict.add(MilvusConstants.Field.ARCHIVE_FEATURE, gson.toJsonTree(vectors));
                 dict.addProperty(MilvusConstants.Field.TEXT, dto.getText());
+                dict.addProperty(MilvusConstants.Field.FILE_NAME, dto.getFileName());
                 insertDatas.add(dict);
             }
             InsertReq insertReq = InsertReq.builder()
@@ -215,7 +222,7 @@ public class MilvusServiceImpl implements MilvusService {
         SearchReq.SearchReqBuilder<?, ?> builder = SearchReq.builder()
                 .collectionName(MilvusConstants.COLLECTION_NAME)
                 .data(Collections.singletonList(baseVector))
-                .topK(1)
+                .topK(4)
                 .metricType(IndexParam.MetricType.IP)
                 .outputFields(Collections.singletonList(MilvusConstants.Field.TEXT));
 
