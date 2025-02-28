@@ -224,7 +224,7 @@ public class MilvusServiceImpl implements MilvusService {
                 .data(Collections.singletonList(baseVector))
                 .topK(4)
                 // 指定搜索的过滤条件
-                .filter("archive_id<100")
+                .filter("archive_id>100")
                 .metricType(IndexParam.MetricType.IP)
                 // 指定返回的字段
                 .outputFields(Collections.singletonList(MilvusConstants.Field.TEXT));
