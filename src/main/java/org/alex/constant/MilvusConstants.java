@@ -6,11 +6,11 @@ package org.alex.constant;
  * @Author wangzf
  * @Date 2025/2/27
  */
-public class FaceArchive {
+public class MilvusConstants {
     /**
      * 集合名称(库名)
      */
-    public static final String COLLECTION_NAME = "face_archive";
+    public static final String COLLECTION_NAME = "collection_5";
     /**
      * 分片数量
      */
@@ -27,7 +27,7 @@ public class FaceArchive {
     /**
      * 特征值长度
      */
-    public static final Integer FEATURE_DIM = 256;
+    public static final Integer FEATURE_DIM = 768;
 
     /**
      * 字段

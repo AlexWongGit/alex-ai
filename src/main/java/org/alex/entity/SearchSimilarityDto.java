@@ -1,35 +1,25 @@
 package org.alex.entity;
 
+import lombok.Data;
+
 /**
  * TODO <br>
  *
  * @Author wangzf
  * @Date 2025/2/27
  */
+@Data
 public class SearchSimilarityDto {
 
     private Long archiveId;
     private Float similarity;
 
-    public SearchSimilarityDto(long longID, float score) {
+    private String result;
+
+    public SearchSimilarityDto(long longID, float similarity, String result) {
         this.archiveId = longID;
-        this.similarity = score;
-    }
-
-    public Long getArchiveId() {
-        return archiveId;
-    }
-
-    public void setArchiveId(Long archiveId) {
-        this.archiveId = archiveId;
-    }
-
-    public Float getSimilarity() {
-        return similarity;
-    }
-
-    public void setSimilarity(Float similarity) {
         this.similarity = similarity;
+        this.result = result;
     }
 
     @Override

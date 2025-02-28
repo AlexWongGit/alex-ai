@@ -1,5 +1,6 @@
 package org.alex.service.impl;
 
+import io.milvus.grpc.SearchResultData;
 import org.alex.entity.SearchSimilarityDto;
 import org.alex.service.MilvusService;
 import org.alex.service.RagService;
@@ -45,10 +46,10 @@ public class RagServiceImpl implements RagService {
         byte[] embeddingBytes = MilvusUtil.convertEmbeddingsToBytes(embed);
 
         // 步骤 2: 在 Milvus 中搜索最相似的文档
-        SearchSimilarityDto searchResult = milvusService.searchSimilarity(embeddingBytes, 1);
+        String searchResult = milvusService.searchSimilarity(embeddingBytes, null);
 
         // 步骤 3: 将搜索结果和问题一起发送给推理模型
-        String context = searchResult!= null? searchResult.getSimilarity().toString() : "";
+        String context = searchResult != null? searchResult.toString() : "";
         String systemPrompt = "你需要根据提供的上下文准确回答用户的问题。";
         String userPrompt = "问题: " + question + "\n上下文: " + context;
 

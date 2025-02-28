@@ -1,7 +1,7 @@
 package org.alex.config;
 
-import io.milvus.client.MilvusServiceClient;
-import io.milvus.param.ConnectParam;
+import io.milvus.v2.client.ConnectConfig;
+import io.milvus.v2.client.MilvusClientV2;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,11 +15,10 @@ public class MilvusConfig {
 
 
     @Bean
-    public MilvusServiceClient milvusServiceClient() {
-        ConnectParam connectParam = ConnectParam.newBuilder()
-                .withHost("127.0.0.1")
-                .withPort(19530)
+    public MilvusClientV2 milvusServiceClient() {
+        ConnectConfig connectConfig = ConnectConfig.builder()
+                .uri("http://127.0.0.1:19530")
                 .build();
-        return new MilvusServiceClient(connectParam);
+        return new MilvusClientV2(connectConfig);
     }
 }

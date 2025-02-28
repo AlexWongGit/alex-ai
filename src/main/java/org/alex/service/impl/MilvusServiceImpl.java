@@ -2,40 +2,36 @@ package org.alex.service.impl;
 
 import cn.hutool.core.util.PrimitiveArrayUtil;
 import com.google.common.collect.Lists;
-import io.milvus.Response.SearchResultsWrapper;
-import io.milvus.client.MilvusServiceClient;
-import io.milvus.grpc.DataType;
-import io.milvus.grpc.GetIndexBuildProgressResponse;
-import io.milvus.grpc.MutationResult;
-import io.milvus.grpc.SearchResults;
-import io.milvus.param.IndexType;
-import io.milvus.param.MetricType;
-import io.milvus.param.R;
-import io.milvus.param.RpcStatus;
-import io.milvus.param.collection.*;
-import io.milvus.param.dml.DeleteParam;
-import io.milvus.param.dml.InsertParam;
-import io.milvus.param.dml.SearchParam;
-import io.milvus.param.index.CreateIndexParam;
-import io.milvus.param.index.GetIndexBuildProgressParam;
-import io.milvus.param.partition.CreatePartitionParam;
-import io.milvus.param.partition.LoadPartitionsParam;
-import io.milvus.param.partition.ReleasePartitionsParam;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import io.milvus.v2.client.MilvusClientV2;
+import io.milvus.v2.common.DataType;
+import io.milvus.v2.common.IndexParam;
+import io.milvus.v2.service.collection.request.*;
+import io.milvus.v2.service.index.request.CreateIndexReq;
+import io.milvus.v2.service.partition.request.CreatePartitionReq;
+import io.milvus.v2.service.partition.request.LoadPartitionsReq;
+import io.milvus.v2.service.partition.request.ReleasePartitionsReq;
+import io.milvus.v2.service.vector.request.DeleteReq;
+import io.milvus.v2.service.vector.request.InsertReq;
+import io.milvus.v2.service.vector.request.SearchReq;
+import io.milvus.v2.service.vector.request.data.BaseVector;
+import io.milvus.v2.service.vector.request.data.FloatVec;
+import io.milvus.v2.service.vector.response.DeleteResp;
+import io.milvus.v2.service.vector.response.InsertResp;
+import io.milvus.v2.service.vector.response.SearchResp;
 import lombok.extern.slf4j.Slf4j;
-import org.alex.constant.FaceArchive;
+import org.alex.constant.MilvusConstants;
 import org.alex.entity.ArchiveDto;
-import org.alex.entity.SearchSimilarityDto;
 import org.alex.service.MilvusService;
 import org.alex.uitls.MilvusUtil;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- *
  * @Author wangzf
  * @Date 2025/2/27
  */
@@ -43,80 +39,88 @@ import java.util.stream.Collectors;
 @Slf4j
 public class MilvusServiceImpl implements MilvusService {
 
-    private final MilvusServiceClient milvusServiceClient;
+    private final MilvusClientV2 client;
 
-    public MilvusServiceImpl(MilvusServiceClient milvusServiceClient) {
-        this.milvusServiceClient = milvusServiceClient;
+    private final Gson gson = new Gson();
+
+    public MilvusServiceImpl(MilvusClientV2 client) {
+        this.client = client;
     }
 
     @Override
     public Boolean hasCollection(String collectionName) {
-        R<Boolean> response = milvusServiceClient.hasCollection(
-                HasCollectionParam.newBuilder()
-                        .withCollectionName(collectionName)
+        return client.hasCollection(
+                HasCollectionReq.builder()
+                        .collectionName(collectionName)
                         .build());
-        return response.getData();
     }
 
     @Override
-    public String createCollection(String collectionName, Integer featureDim) {
-        FieldType archiveId = FieldType.newBuilder()
-                .withName(FaceArchive.Field.ARCHIVE_ID)
-                .withDescription("主键id")
-                .withDataType(DataType.Int64)
-                .withPrimaryKey(true)
-                .withAutoID(false)
-                .build();
-        FieldType orgId = FieldType.newBuilder()
-                .withName(FaceArchive.Field.ORG_ID)
-                .withDescription("组织id")
-                .withDataType(DataType.Int32)
-                .build();
-        FieldType archiveFeature = FieldType.newBuilder()
-                .withName(FaceArchive.Field.ARCHIVE_FEATURE)
-                .withDescription("档案特征值")
-                .withDataType(DataType.FloatVector)
-                .withDimension(FaceArchive.FEATURE_DIM)
-                .build();
-        CreateCollectionParam createCollectionReq = CreateCollectionParam.newBuilder()
-                .withCollectionName(FaceArchive.COLLECTION_NAME)
-                .withDescription("档案集合")
-                .withShardsNum(FaceArchive.SHARDS_NUM)
-                .addFieldType(archiveId)
-                .addFieldType(orgId)
-                .addFieldType(archiveFeature)
-                .build();
-        R<RpcStatus> response = milvusServiceClient.createCollection(createCollectionReq);
-        return response.getData().getMsg();
-    }
-
-    @Override
-    public String createPartition(String collectionName, String partitionName) {
-        R<RpcStatus> response = milvusServiceClient.createPartition(CreatePartitionParam.newBuilder()
-                .withCollectionName(collectionName)
-                .withPartitionName(partitionName)
+    public void createCollection(String collectionName, Integer featureDim) {
+        CreateCollectionReq.CollectionSchema schema = client.createSchema();
+        schema.addField(AddFieldReq.builder()
+                        .fieldName(MilvusConstants.Field.ARCHIVE_ID)
+                .dataType(DataType.Int64)
+                .isPrimaryKey(true)
+                .autoID(false)
+                .description("主键id").build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName(MilvusConstants.Field.ORG_ID)
+                .dataType(DataType.Int32)
+                .description("组织id").build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName(MilvusConstants.Field.ARCHIVE_FEATURE)
+                .dataType(DataType.FloatVector)
+                .dimension(featureDim)
                 .build());
-        return response.getData().getMsg();
+
+        Map<String, Object> extraParams = new HashMap<>(1);
+        extraParams.put("nlist", 16384);
+
+        IndexParam indexParam = IndexParam.builder()
+                .fieldName(MilvusConstants.Field.ARCHIVE_FEATURE)
+                .indexType(IndexParam.IndexType.IVF_FLAT)
+                .metricType(IndexParam.MetricType.IP)
+                .extraParams(extraParams)
+                .build();
+
+        CreateCollectionReq createCollectionReq = CreateCollectionReq.builder()
+                .collectionName(MilvusConstants.COLLECTION_NAME)
+                .description("档案集合")
+                .numShards(MilvusConstants.SHARDS_NUM)
+                .primaryFieldName(MilvusConstants.Field.ARCHIVE_ID)
+                .vectorFieldName(MilvusConstants.Field.ARCHIVE_FEATURE)
+                .indexParam(indexParam)
+                .collectionSchema(schema)
+                .enableDynamicField(true)
+                .build();
+        client.createCollection(createCollectionReq);
     }
 
     @Override
-    public String createIndex(String collectionName, String indexName, String metricType) {
-        R<RpcStatus> response = milvusServiceClient.createIndex(CreateIndexParam.newBuilder()
-                .withCollectionName(FaceArchive.COLLECTION_NAME)
-                .withFieldName(FaceArchive.Field.ARCHIVE_FEATURE)
-                .withIndexType(IndexType.IVF_FLAT)
-                .withMetricType(MetricType.IP)
-                //nlist 建议值为 4 × sqrt(n)，其中 n 指 segment 最多包含的 entity 条数。
-                .withExtraParam("{\"nlist\":16384}")
-                .withSyncMode(Boolean.FALSE)
+    public void createPartition(String collectionName, String partitionName) {
+        client.createPartition(CreatePartitionReq.builder()
+                .collectionName(collectionName)
+                .partitionName(partitionName)
                 .build());
-        log.info("createIndex-------------------->{}", response.toString());
-        R<GetIndexBuildProgressResponse> indexResp = milvusServiceClient.getIndexBuildProgress(
-                GetIndexBuildProgressParam.newBuilder()
-                        .withCollectionName(FaceArchive.COLLECTION_NAME)
-                        .build());
-        log.info("getIndexBuildProgress---------------------------->{}", indexResp.toString());
-        return response.getData().getMsg();
+    }
+
+    @Override
+    public void createIndex(String collectionName, String indexName, String metricType) {
+        Map<String, Object> extraParams = new HashMap<>(1);
+        extraParams.put("nlist", 16384);
+        IndexParam indexParam = IndexParam.builder()
+                .fieldName(MilvusConstants.Field.ARCHIVE_FEATURE)
+                .indexType(IndexParam.IndexType.IVF_FLAT)
+                .metricType(IndexParam.MetricType.IP)
+                .extraParams(extraParams)
+                .build();
+
+         client.createIndex(CreateIndexReq.builder()
+                .collectionName(collectionName)
+                .indexParams(Collections.singletonList(indexParam))
+                .build());
+        log.info("createIndex-------------------->");
     }
 
     @Override
@@ -124,131 +128,105 @@ public class MilvusServiceImpl implements MilvusService {
         Map<Integer, List<ArchiveDto>> map =
                 data.stream().filter(item -> PrimitiveArrayUtil.isNotEmpty(item.getArcsoftFeature())).collect(Collectors.groupingBy(ArchiveDto::getOrgId));
         map.forEach((orgId, list) -> {
-            //插入数据
-            List<InsertParam.Field> fields = new ArrayList<>();
-            List<Long> archiveIds = Lists.newArrayList();
-            List<Integer> orgIds = Lists.newArrayList();
-            List<List<Float>> floatVectors = Lists.newArrayList();
+            List<JsonObject> insertDatas = new ArrayList<>();
             for (ArchiveDto dto : list) {
-                archiveIds.add(dto.getArchiveId());
-                orgIds.add(dto.getOrgId());
-                //虹软特征值转Float向量
-                floatVectors.add(MilvusUtil.arcsoftToFloat(dto.getArcsoftFeature()));
+                JsonObject dict = new JsonObject();
+                dict.add(MilvusConstants.Field.ARCHIVE_ID, new JsonPrimitive(dto.getArchiveId()));
+                dict.add(MilvusConstants.Field.ORG_ID, new JsonPrimitive(dto.getOrgId()));
+                List<Float> vectors = MilvusUtil.arcsoftToFloat(dto.getArcsoftFeature());
+                dict.add(MilvusConstants.Field.ARCHIVE_FEATURE, gson.toJsonTree(vectors));
+                insertDatas.add(dict);
             }
-            //档案ID
-            fields.add(new InsertParam.Field(FaceArchive.Field.ARCHIVE_ID, DataType.Int64, archiveIds));
-            //小区id
-            fields.add(new InsertParam.Field(FaceArchive.Field.ORG_ID, DataType.Int32, orgIds));
-            //特征值
-            fields.add(new InsertParam.Field(FaceArchive.Field.ARCHIVE_FEATURE, DataType.FloatVector, floatVectors));
-            //插入
-            InsertParam insertParam = InsertParam.newBuilder()
-                    .withCollectionName(FaceArchive.COLLECTION_NAME)
-                    .withPartitionName(FaceArchive.getPartitionName(orgId))
-                    .withFields(fields)
+            InsertReq insertReq = InsertReq.builder()
+                    .collectionName(MilvusConstants.COLLECTION_NAME)
+                    .partitionName(MilvusConstants.getPartitionName(orgId))
+                    .data(insertDatas)
                     .build();
-            if (!hasCollection(FaceArchive.COLLECTION_NAME)) {
-                createCollection(FaceArchive.COLLECTION_NAME, FaceArchive.FEATURE_DIM);
+            if (Boolean.FALSE.equals(hasCollection(MilvusConstants.COLLECTION_NAME))) {
+                createCollection(MilvusConstants.COLLECTION_NAME, MilvusConstants.FEATURE_DIM);
+                createIndex(MilvusConstants.COLLECTION_NAME, MilvusConstants.Field.ARCHIVE_FEATURE, IndexParam.MetricType.IP.name());
+                loadCollection(MilvusConstants.COLLECTION_NAME);
+                createPartition(MilvusConstants.COLLECTION_NAME, MilvusConstants.getPartitionName(orgId));
+                loadPartitions(MilvusConstants.COLLECTION_NAME, MilvusConstants.getPartitionName(orgId));
             }
-            R<MutationResult> insert = milvusServiceClient.insert(insertParam);
-            log.info("插入:{}", insert);
+            InsertResp insertResp = client.insert(insertReq);
+            log.info("插入:{}", insertResp);
         });
         return true;
     }
 
     @Override
     public void loadCollection(String collectionName) {
-        R<RpcStatus> response = milvusServiceClient.loadCollection(LoadCollectionParam.newBuilder()
-                //集合名称
-                .withCollectionName(collectionName)
-                .build());
-        log.info("loadCollection------------->{}", response);
+        LoadCollectionReq loadCollectionReq = LoadCollectionReq.builder()
+                .collectionName(collectionName)
+                .build();
+        client.loadCollection(loadCollectionReq);
+        log.info("loadCollection");
     }
 
     @Override
     public void loadPartitions(String collectionName, String partitionsName) {
-        R<RpcStatus> response = milvusServiceClient.loadPartitions(
-                LoadPartitionsParam
-                        .newBuilder()
-                        //集合名称
-                        .withCollectionName(collectionName)
-                        //需要加载的分区名称
-                        .withPartitionNames(Lists.newArrayList(partitionsName))
-                        .build()
-        );
-        log.info("loadCollection------------->{}", response);
+        client.loadPartitions(
+                LoadPartitionsReq.builder()
+                        .collectionName(collectionName)
+                        .partitionNames(Lists.newArrayList(partitionsName))
+                        .build());
     }
 
     @Override
     public void releaseCollection(String collectionName) {
-        R<RpcStatus> response = milvusServiceClient.releaseCollection(ReleaseCollectionParam.newBuilder()
-                .withCollectionName(collectionName)
+         client.releaseCollection(ReleaseCollectionReq.builder()
+                .collectionName(collectionName)
                 .build());
-        log.info("releaseCollection------------->{}", response);
+        log.info("releaseCollection");
     }
 
     @Override
     public void releasePartition(String collectionName, String partitionsName) {
-        R<RpcStatus> response = milvusServiceClient.releasePartitions(ReleasePartitionsParam.newBuilder()
-                .withCollectionName(collectionName)
-                .addPartitionName(partitionsName)
+        client.releasePartitions(ReleasePartitionsReq.builder()
+                .collectionName(collectionName)
+                .partitionNames(Lists.newArrayList(partitionsName))
                 .build());
-        log.info("releasePartition------------->{}", response);
+        log.info("releasePartition");
     }
 
     @Override
     public void deleteEntity(String collectionName, String partitionName, String expr) {
-        R<MutationResult> response = milvusServiceClient.delete(
-                DeleteParam.newBuilder()
-                        //集合名称
-                        .withCollectionName(collectionName)
-                        //分区名称
-                        .withPartitionName(partitionName)
-                        //条件 如: id == 1
-                        .withExpr(expr)
+        DeleteResp deleteResp = client.delete(
+                DeleteReq.builder()
+                        .collectionName(collectionName)
+                        .partitionName(partitionName)
+                        .filter(expr)
                         .build()
         );
-        log.info("deleteEntity------------->{}", response);
+        log.info("deleteEntity------------->{}", deleteResp);
     }
 
     @Override
-    public SearchSimilarityDto searchSimilarity(byte[] arcsoftFeature, Integer orgId) {
+    public String searchSimilarity(byte[] arcsoftFeature, Integer orgId) {
         List<Float> arcsoftToFloat = MilvusUtil.arcsoftToFloat(arcsoftFeature);
-        List<List<Float>> list = new ArrayList<>();
-        list.add(arcsoftToFloat);
-        SearchParam.Builder builder = SearchParam.newBuilder()
-                //集合名称
-                .withCollectionName(FaceArchive.COLLECTION_NAME)
-                //计算方式
-                // 欧氏距离 (L2)
-                // 内积 (IP)
-                .withMetricType(MetricType.IP)
-                //返回多少条结果
-                .withTopK(1)
-                //搜索的向量值
-                .withVectors(list)
-                //搜索的Field
-                .withVectorFieldName(FaceArchive.Field.ARCHIVE_FEATURE)
-                //https://milvus.io/cn/docs/v2.0.0/performance_faq.md
-                .withParams("{\"nprobe\":512}");
+        BaseVector baseVector = new FloatVec(arcsoftToFloat);
+        SearchReq.SearchReqBuilder<?, ?> builder = SearchReq.builder()
+                .collectionName(MilvusConstants.COLLECTION_NAME)
+                .data(Collections.singletonList(baseVector))
+                .topK(4)
+                .outputFields(Collections.singletonList("*"));
+
         if (orgId != null) {
             //如果只需要搜索某个分区的数据,则需要指定分区
-            builder
-                    .withExpr(FaceArchive.Field.ORG_ID + " == " + orgId)
-                    .withPartitionNames(Lists.newArrayList(FaceArchive.getPartitionName(orgId)));
+            builder.partitionNames(Lists.newArrayList(MilvusConstants.getPartitionName(orgId)));
         }
-        R<SearchResults> search = milvusServiceClient.search(builder.build());
-        if (search.getData() == null) {
-            return null;
-        }
-        SearchResultsWrapper wrapper = new SearchResultsWrapper(search.getData().getResults());
-        for (int i = 0; i < list.size(); ++i) {
-            List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
-            if (!scores.isEmpty()) {
-                log.info("搜索结果:{}", scores);
-                SearchResultsWrapper.IDScore idScore = scores.get(0);
-                return new SearchSimilarityDto(idScore.getLongID(), idScore.getScore());
-            }
+        SearchReq searchReq = builder.build();
+        SearchResp searchResp = client.search(searchReq);
+
+        if (searchResp != null
+                && searchResp.getSearchResults() != null
+                && !searchResp.getSearchResults().get(0).isEmpty()
+                && searchResp.getSearchResults().get(0).get(0).getEntity() != null
+        ) {
+            Map<String, Object> entity = searchResp.getSearchResults().get(0).get(0).getEntity();
+            log.info("搜索结果:{}", entity);
+            return gson.toJson(entity);
         }
         return null;
     }

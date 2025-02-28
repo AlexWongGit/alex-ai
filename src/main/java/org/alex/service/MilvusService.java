@@ -1,7 +1,6 @@
 package org.alex.service;
 
 import org.alex.entity.ArchiveDto;
-import org.alex.entity.SearchSimilarityDto;
 
 import java.util.List;
 
@@ -15,11 +14,11 @@ public interface MilvusService {
 
     Boolean hasCollection(String collectionName);
 
-    String createCollection(String collectionName, Integer featureDim);
+    void createCollection(String collectionName, Integer featureDim);
 
-    String createPartition(String collectionName, String partitionName);
+    void createPartition(String collectionName, String partitionName);
 
-    String createIndex(String collectionName, String indexName, String metricType);
+    void createIndex(String collectionName, String indexName, String metricType);
 
     Boolean insert(List<ArchiveDto> data);
 
@@ -33,6 +32,6 @@ public interface MilvusService {
 
     void deleteEntity(String collectionName, String partitionName, String expr);
 
-    SearchSimilarityDto searchSimilarity(byte[] arcsoftFeature, Integer orgId);
+    String searchSimilarity(byte[] arcsoftFeature, Integer orgId);
 
 }
