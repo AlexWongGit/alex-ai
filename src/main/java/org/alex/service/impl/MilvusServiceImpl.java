@@ -92,7 +92,7 @@ public class MilvusServiceImpl implements MilvusService {
         IndexParam indexParam = IndexParam.builder()
                 .fieldName(MilvusConstants.Field.ARCHIVE_FEATURE)
                 .indexType(IndexParam.IndexType.IVF_FLAT)
-                .metricType(IndexParam.MetricType.IP)
+                .metricType(IndexParam.MetricType.COSINE)
                 .extraParams(extraParams)
                 .build();
 
@@ -117,13 +117,13 @@ public class MilvusServiceImpl implements MilvusService {
     }
 
     @Override
-    public void createIndex(String collectionName, String indexName, String metricType) {
+    public void createIndex(String collectionName, String indexName) {
         Map<String, Object> extraParams = new HashMap<>(1);
         extraParams.put("nlist", 16384);
         IndexParam indexParam = IndexParam.builder()
                 .fieldName(MilvusConstants.Field.ARCHIVE_FEATURE)
                 .indexType(IndexParam.IndexType.IVF_FLAT)
-                .metricType(IndexParam.MetricType.IP)
+                .metricType(IndexParam.MetricType.COSINE)
                 .extraParams(extraParams)
                 .build();
 
@@ -157,7 +157,7 @@ public class MilvusServiceImpl implements MilvusService {
                     .build();
             if (Boolean.FALSE.equals(hasCollection(MilvusConstants.COLLECTION_NAME))) {
                 createCollection(MilvusConstants.COLLECTION_NAME, MilvusConstants.FEATURE_DIM);
-                createIndex(MilvusConstants.COLLECTION_NAME, MilvusConstants.Field.ARCHIVE_FEATURE, IndexParam.MetricType.IP.name());
+                createIndex(MilvusConstants.COLLECTION_NAME, MilvusConstants.Field.ARCHIVE_FEATURE);
                 loadCollection(MilvusConstants.COLLECTION_NAME);
                 createPartition(MilvusConstants.COLLECTION_NAME, MilvusConstants.getPartitionName(orgId));
                 loadPartitions(MilvusConstants.COLLECTION_NAME, MilvusConstants.getPartitionName(orgId));
@@ -216,7 +216,7 @@ public class MilvusServiceImpl implements MilvusService {
     }
 
     @Override
-    public String searchSimilarity(byte[] arcsoftFeature, Integer orgId) {
+    public String searchSimilarity(float[] arcsoftFeature, Integer orgId) {
         List<Float> arcsoftToFloat = MilvusUtil.arcsoftToFloat(arcsoftFeature);
         BaseVector baseVector = new FloatVec(arcsoftToFloat);
         SearchReq.SearchReqBuilder<?, ?> builder = SearchReq.builder()
@@ -225,7 +225,7 @@ public class MilvusServiceImpl implements MilvusService {
                 .topK(4)
                 // 指定搜索的过滤条件
                 //.filter("archive_id>100")
-                .metricType(IndexParam.MetricType.IP)
+                .metricType(IndexParam.MetricType.COSINE)
                 // 指定返回的字段
                 .outputFields(Collections.singletonList(MilvusConstants.Field.TEXT));
 

@@ -49,9 +49,8 @@ public class FileServiceImpl implements FileService {
 
         for (int i = 0; i < textArray.length; i++) {
             float[] embedding = embeddingModel.embed(content.toString());
-            byte[] fileBytes = MilvusUtil.convertEmbeddingsToBytes(Collections.singletonList(embedding));
             archive.setFileName(fileName);
-            archive.setArcsoftFeature(fileBytes);
+            archive.setArcsoftFeature(embedding);
             archive.setOrgId(1);
             archive.setText(textArray[i]);
             milvusService.insert(Collections.singletonList(archive));

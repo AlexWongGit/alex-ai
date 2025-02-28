@@ -18,7 +18,7 @@ public interface MilvusService {
 
     void createPartition(String collectionName, String partitionName);
 
-    void createIndex(String collectionName, String indexName, String metricType);
+    void createIndex(String collectionName, String indexName);
 
     Boolean insert(List<ArchiveDto> data);
 
@@ -32,6 +32,6 @@ public interface MilvusService {
 
     void deleteEntity(String collectionName, String partitionName, String expr);
 
-    String searchSimilarity(byte[] arcsoftFeature, Integer orgId);
+    String searchSimilarity(float[] arcsoftFeature, Integer orgId);
 
 }

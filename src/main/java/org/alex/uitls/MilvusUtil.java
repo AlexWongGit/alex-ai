@@ -16,31 +16,12 @@ import java.util.List;
  */
 public class MilvusUtil {
 
-    public static List<Float> arcsoftToFloat(byte[] arcsoftFeature) {
-        // 检查输入的字节数组是否为空或长度是否是 4 的倍数
-        if (arcsoftFeature == null || arcsoftFeature.length % 4!= 0) {
-            throw new IllegalArgumentException("输入的字节数组长度必须是 4 的倍数");
-        }
 
-        // 创建一个存储 Float 类型数据的列表
+    public static List<Float> arcsoftToFloat(float[] floatArray) {
         List<Float> floatList = new ArrayList<>();
-
-        // 循环遍历字节数组，每 4 个字节转换为一个 float 类型的数据
-        for (int i = 0; i < arcsoftFeature.length; i += 4) {
-            // 将 4 个字节组合成一个 int 类型的数据
-            int intBits =
-                    ((arcsoftFeature[i] & 0xFF) << 24) |
-                            ((arcsoftFeature[i + 1] & 0xFF) << 16) |
-                            ((arcsoftFeature[i + 2] & 0xFF) << 8) |
-                            (arcsoftFeature[i + 3] & 0xFF);
-
-            // 将 int 类型的数据转换为 float 类型的数据
-            float floatValue = Float.intBitsToFloat(intBits);
-
-            // 将转换后的 float 类型的数据添加到列表中
-            floatList.add(floatValue);
+        for (float num : floatArray) {
+            floatList.add(num);
         }
-
         return floatList;
     }
 

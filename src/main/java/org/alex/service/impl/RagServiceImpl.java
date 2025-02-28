@@ -39,17 +39,13 @@ public class RagServiceImpl implements RagService {
     @Override
     public String performRag(String question) {
         // 步骤 1: 生成问题的嵌入向量
-        List<float[]> embed = embeddingClient.embed(Collections.singletonList(question));
-
-
-        // 将 embed 列表转换为 byte[]，这里只是示例，实际需要根据 Milvus 要求转换
-        byte[] embeddingBytes = MilvusUtil.convertEmbeddingsToBytes(embed);
+        float[] embedding = embeddingClient.embed(question);
 
         // 步骤 2: 在 Milvus 中搜索最相似的文档
-        String searchResult = milvusService.searchSimilarity(embeddingBytes, null);
+        String searchResult = milvusService.searchSimilarity(embedding, null);
 
         // 步骤 3: 将搜索结果和问题一起发送给推理模型
-        String context = searchResult != null? searchResult.toString() : "";
+        String context = searchResult != null? searchResult : "";
         String systemPrompt = "你需要根据提供的上下文准确回答用户的问题。";
         String userPrompt = "问题: " + question + "\n上下文: " + context;
 
@@ -59,9 +55,9 @@ public class RagServiceImpl implements RagService {
         );
         Prompt prompt = new Prompt(messages);
 
-
         ChatResponse call = ollamaChatClient.call(prompt);
         return call.getResult().toString();
+        // milvus index 向量
     }
 
 }
