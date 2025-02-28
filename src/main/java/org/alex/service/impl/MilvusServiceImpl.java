@@ -223,8 +223,8 @@ public class MilvusServiceImpl implements MilvusService {
                 .collectionName(MilvusConstants.COLLECTION_NAME)
                 .data(Collections.singletonList(baseVector))
                 .topK(4)
-                // 指定搜索的过滤条件写DSL语句
-                //.filter("file_name==1")
+                // 指定搜索的过滤条件
+                .filter("archive_id<100")
                 .metricType(IndexParam.MetricType.IP)
                 // 指定返回的字段
                 .outputFields(Collections.singletonList(MilvusConstants.Field.TEXT));
