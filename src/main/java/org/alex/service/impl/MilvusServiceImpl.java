@@ -75,13 +75,32 @@ public class MilvusServiceImpl implements MilvusService {
                 .dimension(featureDim)
                 .build());
 
+        Map<String, Object> analyzerParamsBuiltin = new HashMap<>();
+        analyzerParamsBuiltin.put("type", "english");
         schema.addField(AddFieldReq.builder()
                 .fieldName(MilvusConstants.Field.TEXT)
                 .dataType(DataType.VarChar)
                 .enableAnalyzer(true)
+                .analyzerParams(analyzerParamsBuiltin)
                 .enableMatch(true)
                 .maxLength(65535)
                 .build());
+
+        // 自定义分词器
+        Map<String, Object> analyzerParams = new HashMap<>();
+        analyzerParams.put("tokenizer", "standard");
+        analyzerParams.put("filter",
+                Arrays.asList("lowercase",
+                        new HashMap<String, Object>() {{
+                            put("type", "length");
+                            put("max", 40);
+                        }},
+                        new HashMap<String, Object>() {{
+                            put("type", "stop");
+                            put("stop_words", Arrays.asList("a", "an", "for"));
+                        }}
+                )
+        );
 
         schema.addField(AddFieldReq.builder()
                 .fieldName(MilvusConstants.Field.FILE_NAME)
@@ -94,7 +113,7 @@ public class MilvusServiceImpl implements MilvusService {
 
         IndexParam indexParam = IndexParam.builder()
                 .fieldName(MilvusConstants.Field.ARCHIVE_FEATURE)
-                .indexType(IndexParam.IndexType.IVF_FLAT)
+                .indexType(IndexParam.IndexType.AUTOINDEX)
                 .metricType(IndexParam.MetricType.IP)
                 .extraParams(extraParams)
                 .build();
@@ -125,7 +144,7 @@ public class MilvusServiceImpl implements MilvusService {
         extraParams.put("nlist", 16384);
         IndexParam indexParam = IndexParam.builder()
                 .fieldName(MilvusConstants.Field.ARCHIVE_FEATURE)
-                .indexType(IndexParam.IndexType.IVF_FLAT)
+                .indexType(IndexParam.IndexType.AUTOINDEX)
                 .metricType(IndexParam.MetricType.COSINE)
                 .extraParams(extraParams)
                 .build();
