@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import io.milvus.common.clientenum.FunctionType;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
@@ -17,7 +18,9 @@ import io.milvus.v2.service.vector.request.DeleteReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.SearchReq;
 import io.milvus.v2.service.vector.request.data.BaseVector;
+import io.milvus.v2.service.vector.request.data.EmbeddedText;
 import io.milvus.v2.service.vector.request.data.FloatVec;
+import io.milvus.v2.service.vector.request.data.SparseFloatVec;
 import io.milvus.v2.service.vector.response.DeleteResp;
 import io.milvus.v2.service.vector.response.InsertResp;
 import io.milvus.v2.service.vector.response.SearchResp;
@@ -75,8 +78,13 @@ public class MilvusServiceImpl implements MilvusService {
                 .dimension(featureDim)
                 .build());
 
+        schema.addField(AddFieldReq.builder()
+                .fieldName("sparse")
+                .dataType(DataType.SparseFloatVector)
+                .build());
+
         Map<String, Object> analyzerParamsBuiltin = new HashMap<>();
-        analyzerParamsBuiltin.put("type", "english");
+        analyzerParamsBuiltin.put("type", "chinese");
         schema.addField(AddFieldReq.builder()
                 .fieldName(MilvusConstants.Field.TEXT)
                 .dataType(DataType.VarChar)
@@ -108,15 +116,29 @@ public class MilvusServiceImpl implements MilvusService {
                 .maxLength(256)
                 .build());
 
+        // 定义一个函数，将文本转换为稀疏向量表示
+        schema.addFunction(CreateCollectionReq.Function.builder()
+                .functionType(FunctionType.BM25)
+                .name("text_bm25_emb")
+                .inputFieldNames(Collections.singletonList(MilvusConstants.Field.TEXT))
+                .outputFieldNames(Collections.singletonList("sparse"))
+                .build());
+
         Map<String, Object> extraParams = new HashMap<>(1);
         extraParams.put("nlist", 16384);
 
-        IndexParam indexParam = IndexParam.builder()
+        List<IndexParam> indexes = new ArrayList<>();
+        indexes.add(IndexParam.builder()
                 .fieldName(MilvusConstants.Field.ARCHIVE_FEATURE)
                 .indexType(IndexParam.IndexType.AUTOINDEX)
-                .metricType(IndexParam.MetricType.IP)
-                .extraParams(extraParams)
-                .build();
+                .metricType(IndexParam.MetricType.COSINE)
+                //.extraParams(extraParams)
+                .build());
+        indexes.add(IndexParam.builder()
+                .fieldName("sparse")
+                .indexType(IndexParam.IndexType.SPARSE_INVERTED_INDEX)
+                .metricType(IndexParam.MetricType.BM25)
+                .build());
 
         CreateCollectionReq createCollectionReq = CreateCollectionReq.builder()
                 .collectionName(MilvusConstants.COLLECTION_NAME)
@@ -124,7 +146,7 @@ public class MilvusServiceImpl implements MilvusService {
                 .numShards(MilvusConstants.SHARDS_NUM)
                 .primaryFieldName(MilvusConstants.Field.ARCHIVE_ID)
                 .vectorFieldName(MilvusConstants.Field.ARCHIVE_FEATURE)
-                .indexParams(Collections.singletonList(indexParam))
+                .indexParams(indexes)
                 .collectionSchema(schema)
                 .build();
         client.createCollection(createCollectionReq);
@@ -146,7 +168,7 @@ public class MilvusServiceImpl implements MilvusService {
                 .fieldName(MilvusConstants.Field.ARCHIVE_FEATURE)
                 .indexType(IndexParam.IndexType.AUTOINDEX)
                 .metricType(IndexParam.MetricType.COSINE)
-                .extraParams(extraParams)
+                //.extraParams(extraParams)
                 .build();
 
          client.createIndex(CreateIndexReq.builder()
@@ -238,16 +260,21 @@ public class MilvusServiceImpl implements MilvusService {
     }
 
     @Override
-    public String searchSimilarity(float[] arcsoftFeature, Integer orgId) {
+    public String searchSimilarity(float[] arcsoftFeature, Integer orgId, String question) {
         List<Float> arcsoftToFloat = MilvusUtil.arcsoftToFloat(arcsoftFeature);
-        BaseVector baseVector = new FloatVec(arcsoftToFloat);
+        //BaseVector baseVector = new FloatVec(arcsoftToFloat);
+        BaseVector baseVector = new EmbeddedText(question);
+        Map<String,Object> searchParams = new HashMap<>();
+        searchParams.put("drop_ratio_search", 0.2);
         SearchReq.SearchReqBuilder<?, ?> builder = SearchReq.builder()
                 .collectionName(MilvusConstants.COLLECTION_NAME)
                 .data(Collections.singletonList(baseVector))
-                .topK(4)
+                .annsField("sparse")
+                .topK(10)
+                .searchParams(searchParams)
                 // 指定搜索的过滤条件
                 //.filter("archive_id>100")
-                .metricType(IndexParam.MetricType.IP)
+                .metricType(IndexParam.MetricType.BM25)
                 // 指定返回的字段
                 .outputFields(Collections.singletonList(MilvusConstants.Field.TEXT));
 

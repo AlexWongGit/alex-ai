@@ -32,6 +32,6 @@ public interface MilvusService {
 
     void deleteEntity(String collectionName, String partitionName, String expr);
 
-    String searchSimilarity(float[] arcsoftFeature, Integer orgId);
+    String searchSimilarity(float[] arcsoftFeature, Integer orgId, String question);
 
 }

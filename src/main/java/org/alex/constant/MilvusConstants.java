@@ -10,7 +10,7 @@ public class MilvusConstants {
     /**
      * 集合名称(库名)
      */
-    public static final String COLLECTION_NAME = "collection_9";
+    public static final String COLLECTION_NAME = "collection_15";
     /**
      * 分片数量
      */

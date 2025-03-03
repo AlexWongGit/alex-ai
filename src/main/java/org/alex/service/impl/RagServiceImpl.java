@@ -42,7 +42,7 @@ public class RagServiceImpl implements RagService {
         float[] embedding = embeddingClient.embed(question);
 
         // 步骤 2: 在 Milvus 中搜索最相似的文档
-        String searchResult = milvusService.searchSimilarity(embedding, null);
+        String searchResult = milvusService.searchSimilarity(embedding, null, question);
 
         // 步骤 3: 将搜索结果和问题一起发送给推理模型
         String context = searchResult != null? searchResult : "";
