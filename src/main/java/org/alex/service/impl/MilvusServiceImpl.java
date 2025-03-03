@@ -68,6 +68,7 @@ public class MilvusServiceImpl implements MilvusService {
                 .fieldName(MilvusConstants.Field.ORG_ID)
                 .dataType(DataType.Int32)
                 .description("组织id").build());
+
         schema.addField(AddFieldReq.builder()
                 .fieldName(MilvusConstants.Field.ARCHIVE_FEATURE)
                 .dataType(DataType.FloatVector)
@@ -77,6 +78,8 @@ public class MilvusServiceImpl implements MilvusService {
         schema.addField(AddFieldReq.builder()
                 .fieldName(MilvusConstants.Field.TEXT)
                 .dataType(DataType.VarChar)
+                .enableAnalyzer(true)
+                .enableMatch(true)
                 .maxLength(65535)
                 .build());
 
@@ -92,7 +95,7 @@ public class MilvusServiceImpl implements MilvusService {
         IndexParam indexParam = IndexParam.builder()
                 .fieldName(MilvusConstants.Field.ARCHIVE_FEATURE)
                 .indexType(IndexParam.IndexType.IVF_FLAT)
-                .metricType(IndexParam.MetricType.COSINE)
+                .metricType(IndexParam.MetricType.IP)
                 .extraParams(extraParams)
                 .build();
 
@@ -225,7 +228,7 @@ public class MilvusServiceImpl implements MilvusService {
                 .topK(4)
                 // 指定搜索的过滤条件
                 //.filter("archive_id>100")
-                .metricType(IndexParam.MetricType.COSINE)
+                .metricType(IndexParam.MetricType.IP)
                 // 指定返回的字段
                 .outputFields(Collections.singletonList(MilvusConstants.Field.TEXT));
 
