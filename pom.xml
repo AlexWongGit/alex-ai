@@ -5,7 +5,13 @@
     <groupId>org.alex</groupId>
     <artifactId>alex-ai</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <modules>
+        <module>alex-data-process</module>
+        <module>alex-common</module>
+        <module>alex-rag</module>
+        <module>alex-vector-database</module>
+    </modules>
+    <packaging>pom</packaging>
 
     <name>alex-ai</name>
     <url>http://maven.apache.org</url>
