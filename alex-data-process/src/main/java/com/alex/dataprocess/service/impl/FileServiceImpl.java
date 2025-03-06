@@ -1,6 +1,6 @@
-package com.alex.docprocess.service.impl;
+package com.alex.dataprocess.service.impl;
 
-import com.alex.docprocess.service.FileService;
+import com.alex.dataprocess.service.FileService;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;

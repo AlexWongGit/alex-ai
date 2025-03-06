@@ -1,4 +1,4 @@
-package com.alex.entity;
+package com.alex.common.entity;
 
 import lombok.Data;
 

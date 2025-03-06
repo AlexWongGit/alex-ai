@@ -1,9 +1,9 @@
 package com.alex.rag.service.impl;
 
-import com.alex.docprocess.service.FileService;
-import com.alex.entity.ArchiveDto;
+import com.alex.dataprocess.service.FileService;
+import com.alex.common.entity.ArchiveDto;
 import com.alex.rag.service.RagService;
-import com.alex.utils.MilvusUtil;
+import com.alex.common.utils.MilvusUtil;
 import com.alex.vec.service.MilvusService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.messages.Message;

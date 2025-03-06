@@ -1,4 +1,4 @@
-package com.alex.constant;
+package com.alex.common.constant;
 
 /**
  * TODO <br>

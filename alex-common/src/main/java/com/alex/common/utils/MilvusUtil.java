@@ -1,4 +1,4 @@
-package com.alex.utils;
+package com.alex.common.utils;
 
 import org.springframework.web.multipart.MultipartFile;
 

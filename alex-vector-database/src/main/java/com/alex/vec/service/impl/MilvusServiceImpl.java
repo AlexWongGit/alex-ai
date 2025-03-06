@@ -1,10 +1,10 @@
 package com.alex.vec.service.impl;
 
 import cn.hutool.core.util.PrimitiveArrayUtil;
-import com.alex.entity.ArchiveDto;
-import com.alex.constant.MilvusConstants;
+import com.alex.common.entity.ArchiveDto;
+import com.alex.common.constant.MilvusConstants;
 import com.alex.vec.service.MilvusService;
-import com.alex.utils.MilvusUtil;
+import com.alex.common.utils.MilvusUtil;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
