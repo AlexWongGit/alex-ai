@@ -1,4 +1,4 @@
-package org.alex.model.config;
+package org.alex.rag.model.config;
 
 import io.micrometer.observation.ObservationRegistry;
 import org.springframework.ai.model.tool.ToolCallingManager;

@@ -1,11 +1,8 @@
 package org.alex.rag.controller;
 
-import org.alex.dataprocess.service.FileService;
 import org.alex.common.utils.MilvusUtil;
-import org.alex.vec.service.MilvusService;
 import lombok.extern.slf4j.Slf4j;
 import org.alex.rag.service.RagService;
-import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,16 +29,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class RAGController {
 
     @Autowired
-    private MilvusService milvusService;
-
-    @Autowired
-    private FileService fileService;
-
-    @Autowired
     private RagService ragService;
-
-    @Autowired
-    private OllamaEmbeddingModel embeddingModel;
 
     @RequestMapping("upload")
     public String uploadFileAndSaveToMilvus(@RequestPart("file") MultipartFile file) throws IOException {

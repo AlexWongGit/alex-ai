@@ -1,4 +1,4 @@
-package org.alex.model.tool;
+package org.alex.rag.model.tool;
 
 import org.springframework.context.annotation.Description;
 
