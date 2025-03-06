@@ -17,3 +17,5 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
+milvus:
+  baseUrl: http://127.0.0.1:19530
