@@ -131,19 +131,23 @@ public class RagServiceImpl implements RagService {
     @Override
     public String performRag(String question) {
         // 步骤 1: 使用大模型提取关键词生成向量
-        final String template = "请提取这个句子中{question}最适合用来转化成向量作为向量数据库搜索条件的关键词，结果只要是一个字符串以关键字是开头，不要有多余的话。";
+        final String template = "请提取这个句子中{question}的关键词，结果只要是一个字符串以'关键字：'开头，用'、'分割，并以'回答完毕'结尾，不要有多余的话，注意只需要这个句子中包含的关键字即可。";
         PromptTemplate promptTemplate = new PromptTemplate(template);
         Prompt prompt1 = promptTemplate.create(Map.of("question", question));
 
         ChatResponse chatResponse = ollamaChatClient.call(prompt1);
 
-        String keyWords = chatResponse.getResult().toString();
-
+        String resp = chatResponse.getResult().toString();
+        String keyword = extractKeywords(resp);
+        if (keyword.isEmpty()) {
+            keyword = question;
+        }
+        log.info("关键词：{}", keyword);
         // 步骤 2: 生成关键字的嵌入向量
-        float[] embedding = embeddingModel.embed(keyWords);
+        float[] embedding = embeddingModel.embed(keyword);
 
         // 步骤 3: 数据检索阶段, 在 Milvus 中搜索最相似的文档
-        String searchResult = milvusService.searchSimilarity(embedding, null, keyWords);
+        String searchResult = milvusService.searchSimilarity(embedding, null, keyword);
 
         // 步骤 4: 信息增强与整合
 
@@ -166,6 +170,24 @@ public class RagServiceImpl implements RagService {
 
         // 步骤 8: 返回结果
         return call.getResult().toString();
+    }
+
+    public static String extractKeywords(String input) {
+        int startIndex = input.lastIndexOf("关键字：");
+        if (startIndex == -1) {
+            return "";
+        }
+        startIndex += "关键字：".length();
+        int endIndex = input.lastIndexOf("回答完毕");
+        if (endIndex == -1) {
+            endIndex = input.length();
+        } else {
+            endIndex -= "回答完毕".length();
+        }
+        if (startIndex >= endIndex) {
+            return "";
+        }
+        return input.substring(startIndex, endIndex).trim();
     }
 
 }
