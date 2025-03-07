@@ -11,6 +11,7 @@ import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.stereotype.Service;
@@ -96,7 +97,7 @@ public class RagServiceImpl implements RagService {
         return ret;
     }
 
-    @Override
+/*    @Override
     public String performRag(String question) {
         // 步骤 1: 生成问题的嵌入向量
         float[] embedding = embeddingModel.embed(question);
@@ -124,6 +125,46 @@ public class RagServiceImpl implements RagService {
         // 步骤 6: 动态融合与输出 attention
 
         // 步骤 7: 返回结果
+        return call.getResult().toString();
+    }
+    */
+    @Override
+    public String performRag(String question) {
+        // 步骤 1: 使用大模型提取关键词生成向量
+        final String template = "请提取这个句子中{question}最适合用来转化成向量作为向量数据库搜索条件的关键词，结果只要是一个字符串以关键字是开头，不要有多余的话。";
+        PromptTemplate promptTemplate = new PromptTemplate(template);
+        Prompt prompt1 = promptTemplate.create(Map.of("question", question));
+
+        ChatResponse chatResponse = ollamaChatClient.call(prompt1);
+
+        String keyWords = chatResponse.getResult().toString();
+
+        // 步骤 2: 生成关键字的嵌入向量
+        float[] embedding = embeddingModel.embed(keyWords);
+
+        // 步骤 3: 数据检索阶段, 在 Milvus 中搜索最相似的文档
+        String searchResult = milvusService.searchSimilarity(embedding, null, keyWords);
+
+        // 步骤 4: 信息增强与整合
+
+        // 步骤 5: 将搜索结果和问题一起发送给推理模型
+        String context = searchResult != null? searchResult : "";
+        String systemPrompt = "你需要根据提供的上下文准确回答用户的问题。";
+        String userPrompt = "问题: " + question + "\n上下文: " + context;
+
+        List<Message> messages = Arrays.asList(
+                new SystemMessage(systemPrompt),
+                new UserMessage(userPrompt)
+        );
+        Prompt prompt2 = new Prompt(messages);
+
+
+        // 步骤 6: 自然语言生成, 获取模型生成的答案transformer、rnn
+        ChatResponse call = ollamaChatClient.call(prompt2);
+
+        // 步骤 7: 动态融合与输出 attention
+
+        // 步骤 8: 返回结果
         return call.getResult().toString();
     }
 

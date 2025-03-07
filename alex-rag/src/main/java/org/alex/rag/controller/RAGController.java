@@ -34,7 +34,7 @@ public class RAGController {
     @RequestMapping("upload")
     public String uploadFileAndSaveToMilvus(@RequestPart("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
-            return "上传文件为空";
+            throw new RuntimeException("文件为空");
         }
         return ragService.uploadFileAndSaveToMilvus(file) ? "上传成功" : "上传失败";
     }
