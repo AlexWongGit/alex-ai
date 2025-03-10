@@ -59,16 +59,16 @@ public class HistoryMessage {
         if (MessageType.USER == type) {
             this.messageType = "user";
         }
-        if (MessageType.ASSISTANT == type) {
+        else if (MessageType.ASSISTANT == type) {
             this.messageType = "assistant";
         }
-        if (MessageType.SYSTEM == type) {
+        else if (MessageType.SYSTEM == type) {
             this.messageType = "system";
-        }
-        if (MessageType.TOOL == type) {
+        } else if (MessageType.TOOL == type) {
             this.messageType = "tool";
+        } else {
+            throw new RuntimeException("message type is null");
         }
-        throw new RuntimeException("message type is null");
     }
 
     public MessageType getMessageType() {
