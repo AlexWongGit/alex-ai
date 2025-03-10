@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @MapperScan(basePackages = "org.alex.mapper")
-@SpringBootApplication(scanBasePackages = {"org.alex"},exclude = { DataSourceAutoConfiguration.class })
+@SpringBootApplication(scanBasePackages = {"org.alex"})
 public class Application {
 
     public static void main(String[] args) {

@@ -20,7 +20,7 @@ spring:
       max-file-size: 50MB
       max-request-size: 50MB
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/demo_database?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://127.0.0.1:3306/alex_rag?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: 12345678
   redis:

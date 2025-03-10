@@ -4,12 +4,9 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.MessageType;
 
 import java.util.Date;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * TODO <br>
