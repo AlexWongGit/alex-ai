@@ -11,6 +11,7 @@ import org.springframework.ai.ollama.management.ModelManagementOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 /**
  *
@@ -23,23 +24,47 @@ public class OllamaConfig {
     @Value("${spring.ai.ollama.base-url}")
     private String baseUrl;
 
-    @Value("${spring.ai.ollama.chat.options.model}")
-    private String modelName;
+    @Value("${deepseek.model}")
+    private String deepSeekModelName;
 
-    @Value("${spring.ai.ollama.chat.options.temperature}")
-    private Double temperature;
+    @Value("${qwen.model}")
+    private String qwenModelName;
+
+    @Value("${deepseek.temperature}")
+    private Double deepSeekTemperature;
+
+    @Value("${qwen.temperature}")
+    private Double qwenTemperature;
 
 
 
-    @Bean
-    public OllamaChatModel chatModel()
+
+
+    @Bean(name = "deepSeekClient")
+    @Primary
+    public OllamaChatModel deepSeekClient()
     {
         var ollamaApi = new OllamaApi(baseUrl);
 
         return new OllamaChatModel(ollamaApi,
                 OllamaOptions.builder()
-                        .model(modelName)
-                        .temperature(temperature)
+                        .model(deepSeekModelName)
+                        .temperature(deepSeekTemperature)
+                        .build(),
+                ToolCallingManager.builder().build(),
+                ObservationRegistry.NOOP,
+                ModelManagementOptions.defaults());
+    }
+
+    @Bean(name = "qWenClient")
+    public OllamaChatModel qWenClient()
+    {
+        var ollamaApi = new OllamaApi(baseUrl);
+
+        return new OllamaChatModel(ollamaApi,
+                OllamaOptions.builder()
+                        .model(qwenModelName)
+                        .temperature(qwenTemperature)
                         .build(),
                 ToolCallingManager.builder().build(),
                 ObservationRegistry.NOOP,

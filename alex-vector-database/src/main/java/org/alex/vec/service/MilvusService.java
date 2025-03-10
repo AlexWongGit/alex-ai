@@ -1,7 +1,7 @@
 package org.alex.vec.service;
 
 
-import org.alex.common.entity.ArchiveDto;
+import org.alex.common.bean.dto.ArchiveDto;
 
 import java.util.List;
 

@@ -4,11 +4,13 @@ import org.alex.common.utils.MilvusUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.alex.rag.service.RagService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Flux;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +64,7 @@ public class RAGController {
     }
 
     @RequestMapping("ask")
-    public String searchTallestSimilarity(@RequestParam("question") String question) {
+    public Flux<ServerSentEvent<String>> searchTallestSimilarity(@RequestParam("question") String question) {
         return ragService.performRag(question);
     }
 

@@ -1,7 +1,7 @@
 package org.alex.vec.service.impl;
 
 import cn.hutool.core.util.PrimitiveArrayUtil;
-import org.alex.common.entity.ArchiveDto;
+import org.alex.common.bean.dto.ArchiveDto;
 import org.alex.common.constant.MilvusConstants;
 import org.alex.vec.service.MilvusService;
 import org.alex.common.utils.MilvusUtil;

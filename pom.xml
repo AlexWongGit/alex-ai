@@ -11,6 +11,7 @@
         <module>alex-rag</module>
         <module>alex-vector-database</module>
         <module>alex-app</module>
+        <module>alex-serv</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -42,7 +43,41 @@
                 <artifactId>spring-boot-starter-web</artifactId>
                 <version>3.2.0</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-neo4j</artifactId>
+                <version>3.2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-redis</artifactId>
+                <version>3.2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson</artifactId>
+                <version>3.29.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-boot-starter</artifactId>
+                <version>3.3.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis-spring</artifactId>
+                <version>2.0.3</version>
+            </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>8.0.29</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid</artifactId>
+                <version>1.2.16</version>
+            </dependency>
             <dependency>
                 <groupId>io.projectreactor</groupId>
                 <artifactId>reactor-core</artifactId>
@@ -52,11 +87,6 @@
                 <groupId>io.projectreactor.addons</groupId>
                 <artifactId>reactor-extra</artifactId>
                 <version>3.4.8</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.ai</groupId>
-                <artifactId>spring-ai-ollama-spring-boot-starter</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>io.milvus</groupId>
@@ -72,16 +102,6 @@
                     </exclusion>
                 </exclusions>
                 <version>2.5.2</version>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>dashscope-sdk-java</artifactId>
-                <version>2.14.4</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.playwright</groupId>
-                <artifactId>playwright</artifactId>
-                <version>1.25.0</version>
             </dependency>
             <dependency>
                 <groupId>cn.hutool</groupId>
@@ -119,6 +139,13 @@
                         <artifactId>langchain4j-ollama</artifactId>
                         <version>0.27.1</version>
                     </dependency>-->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

@@ -1,4 +1,4 @@
-package org.alex.common.entity;
+package org.alex.common.bean.dto;
 
 import lombok.Data;
 

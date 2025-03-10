@@ -12,10 +12,27 @@ spring:
         options:
           model: deepseek-r1:32b
           temperature: 0.7
-          #model: qwen:0.5b
+    vectorstore:
+      milvus:
+        initialize-schema: true
   servlet:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/demo_database?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 12345678
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: 123456
+    database: 0
 milvus:
   baseUrl: http://127.0.0.1:19530
+deepseek:
+  model: deepseek-r1:32b
+  temperature: 0.7
+qwen:
+  model: qwen:2.5b
+  temperature: 0.7
