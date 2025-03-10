@@ -13,22 +13,14 @@ import org.alex.vec.service.MilvusService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
-import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.ai.model.Media;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
-import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
-import reactor.core.publisher.Flux;
 
 import java.io.File;
 import java.io.IOException;
@@ -118,39 +110,8 @@ public class RagServiceImpl implements RagService {
         return ret;
     }
 
-/*    @Override
-    public String performRag(String question) {
-        // 步骤 1: 生成问题的嵌入向量
-        float[] embedding = embeddingModel.embed(question);
-
-        // 步骤 2: 数据检索阶段, 在 Milvus 中搜索最相似的文档
-        String searchResult = milvusService.searchSimilarity(embedding, null, question);
-
-        // 步骤 3: 信息增强与整合
-
-        // 步骤 4: 将搜索结果和问题一起发送给推理模型
-        String context = searchResult != null? searchResult : "";
-        String systemPrompt = "你需要根据提供的上下文准确回答用户的问题。";
-        String userPrompt = "问题: " + question + "\n上下文: " + context;
-
-        List<Message> messages = Arrays.asList(
-                new SystemMessage(systemPrompt),
-                new UserMessage(userPrompt)
-        );
-        Prompt prompt = new Prompt(messages);
-
-
-        // 步骤 5: 自然语言生成, 获取模型生成的答案transformer、rnn
-        ChatResponse call = ollamaChatClient.call(prompt);
-
-        // 步骤 6: 动态融合与输出 attention
-
-        // 步骤 7: 返回结果
-        return call.getResult().toString();
-    }
-    */
     @Override
-    public Flux<ServerSentEvent<String>> performRag(String question) {
+    public String performRag(String question) {
         // 步骤 1: 使用大模型提取关键词生成向量
         PromptTemplate promptTemplate = new PromptTemplate(PromptTemplateConstants.GET_KEYWORDS_TEMPLATE);
         Prompt prompt1 = promptTemplate.create(Map.of("question", question));
@@ -180,18 +141,13 @@ public class RagServiceImpl implements RagService {
         String userPrompt = "问题: " + question + "\n上下文: " + context;
         // 步骤 6: 自然语言生成, 获取模型生成的答案transformer、rnn
         //String[] functionBeanNames = new String[0];
-        return ChatClient.create(deepSeekClient).prompt()
-            .system(systemPrompt)
-            .user(userPrompt)
+        ChatResponse response = ChatClient.create(deepSeekClient).prompt().system(systemPrompt).user(userPrompt)
             //.tools(functionBeanNames)
             .advisors(advisorSpec -> {
                 fillHistory(advisorSpec, "12345");
                 //useVectorStore(advisorSpec, aiMessageWrapper.getParams().getEnableVectorStore());
-            }).stream()
-            .chatResponse()
-            .map(response -> ServerSentEvent.builder(toJson(response))
-                // 和前端监听的事件相对应
-                .event("message").build());
+            }).call().chatResponse();
+        return response.getResult().toString();
     }
 
     @SneakyThrows
@@ -207,17 +163,6 @@ public class RagServiceImpl implements RagService {
         advisorSpec.advisors(new MessageChatMemoryAdvisor(chatMemory, sessionId, 10));
     }
 
-/*    public void useVectorStore(ChatClient.AdvisorSpec advisorSpec) {
-        // question_answer_context是一个占位符，会替换成向量数据库中查询到的文档。QuestionAnswerAdvisor会替换。
-        String promptWithContext = """
-                下面是上下文信息
-                ---------------------
-                {question_answer_context}
-                ---------------------
-                给定的上下文和提供的历史信息，而不是事先的知识，回复用户的意见。如果答案不在上下文中，告诉用户你不能回答这个问题。
-                """;
-        advisorSpec.advisors(new QuestionAnswerAdvisor(vectorStore, SearchRequest.builder().build(), promptWithContext));
-    }*/
 
     public static String extractKeywords(String input) {
         int startIndex = input.lastIndexOf("关键字：");

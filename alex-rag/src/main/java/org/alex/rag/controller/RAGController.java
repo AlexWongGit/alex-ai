@@ -64,7 +64,7 @@ public class RAGController {
     }
 
     @RequestMapping("ask")
-    public Flux<ServerSentEvent<String>> searchTallestSimilarity(@RequestParam("question") String question) {
+    public String searchTallestSimilarity(@RequestParam("question") String question) {
         return ragService.performRag(question);
     }
 
