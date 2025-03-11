@@ -2,7 +2,6 @@ package org.alex.rag.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
-import lombok.SneakyThrows;
 import org.alex.dataprocess.service.FileService;
 import org.alex.common.bean.dto.ArchiveDto;
 import org.alex.rag.module.memory.HistoryChatMemory;
@@ -13,12 +12,9 @@ import org.alex.vec.service.MilvusService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.messages.SystemMessage;
-import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.ai.document.Document;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -137,14 +133,17 @@ public class RagServiceImpl implements RagService {
 
         // 步骤 5: 将搜索结果和问题一起发送给推理模型
         String systemPrompt = "你需要根据提供的上下文准确回答用户的问题。";
-        String userPrompt = "问题: " + question + "\n上下文: " + context;
-        Prompt prompt = new Prompt(new SystemMessage(systemPrompt), new UserMessage(userPrompt));
+        PromptTemplate promptTemplate1 = new PromptTemplate(PromptTemplateConstants.PROMPT_RAG);
+        Prompt userPrompt = promptTemplate1.create(Map.of("query", question, "context", context));
+        //String userPrompt = "问题: " + question + "\n上下文: " + context;
+        //Prompt prompt = new Prompt(new SystemMessage(systemPrompt), new UserMessage(userPrompt));
         // 步骤 6: 自然语言生成, 获取模型生成的答案
-        ChatResponse response = ChatClient.create(qWenClient)
-            .prompt(prompt)
+        ChatResponse response = ChatClient.create(deepSeekClient)
+            .prompt(userPrompt)
+            .system(systemPrompt)
             //.tools(functionBeanNames)
             // 历史问答
-            //.advisors(advisorSpec -> fillHistory(advisorSpec, "12345"))
+            .advisors(advisorSpec -> fillHistory(advisorSpec, "12345"))
             .call().chatResponse();
         return response.getResult().toString();
     }
