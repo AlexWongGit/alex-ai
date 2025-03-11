@@ -1,12 +1,12 @@
 package org.alex.dataprocess.service.impl;
 
+import org.alex.common.enums.FileTypeEnum;
+import org.alex.dataprocess.processor.FileParser;
+import org.alex.dataprocess.processor.PDFParser;
 import org.alex.dataprocess.service.FileService;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -17,31 +17,24 @@ import java.util.*;
 public class FileServiceImpl implements FileService {
 
     @Override
-    public String[] splitFile(File file) {
-        // 从文件中提取文本
-        StringBuilder content = new StringBuilder();
-        try (PDDocument document = PDDocument.load(file)) {
-            PDFTextStripper stripper = new PDFTextStripper();
-            String text = stripper.getText(document);
-            content.append(text);
-        } catch (IOException e) {
-            e.printStackTrace();
+    public List<String> splitFile(File file, FileTypeEnum fileType) {
+        FileParser parser;
+        if (FileTypeEnum.PDF == fileType) {
+            parser = new PDFParser();
+        } else {
+            throw new RuntimeException("不支持的文件类型");
         }
-        // 构造字符串数组，按段落拆分文本
-        String fullText = content.toString();
-
-
-        // 按空行拆分段落
-        return fullText.split("\\n\\s*\\n");
+        return parser.split2Chunks(file, 1000);
     }
 
+
     @Override
-    public Map<String, String[]> batchUploadFiles(Map<String, File> fileMap) {
-        Map<String, String[]> ret = new HashMap<>(1);
+    public Map<String, List<String>> batchUploadFiles(Map<String, File> fileMap) {
+        Map<String, List<String>> ret = new HashMap<>(1);
         for (Map.Entry<String, File> entry : fileMap.entrySet()) {
             String fileName = entry.getKey();
             File file = entry.getValue();
-            String[] splitFiles = splitFile(file);
+            List<String> splitFiles = splitFile(file, FileTypeEnum.getFileType(file.getName()));
             ret.put(fileName, splitFiles);
         }
         return ret;

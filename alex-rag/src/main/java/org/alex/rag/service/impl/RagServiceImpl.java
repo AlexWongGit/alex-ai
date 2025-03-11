@@ -2,6 +2,7 @@ package org.alex.rag.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
+import org.alex.common.enums.FileTypeEnum;
 import org.alex.dataprocess.service.FileService;
 import org.alex.common.bean.dto.ArchiveDto;
 import org.alex.rag.module.memory.HistoryChatMemory;
@@ -61,14 +62,14 @@ public class RagServiceImpl implements RagService {
         try
         {
             // 使用转换后的 File 对象进行后续操作
-            String[] textArray = fileService.splitFile(tempFile);
+            List<String> textArray = fileService.splitFile(tempFile, FileTypeEnum.getFileType(file.getOriginalFilename()));
             log.info("转换后的文件路径: {}" + tempFile.getAbsolutePath());
             for (String s : textArray)
             {
                 ArchiveDto archive = new ArchiveDto();
                 // 生成嵌入向量
                 float[] embedding = embeddingModel.embed(s);
-                archive.setFileName(file.getName());
+                archive.setFileName(file.getOriginalFilename());
                 archive.setArcsoftFeature(embedding);
                 archive.setOrgId(1);
                 archive.setText(s);
@@ -89,11 +90,11 @@ public class RagServiceImpl implements RagService {
 
     @Override
     public Map<String, Boolean> batchUploadFileAndSaveToMilvus(Map<String, File> files) {
-        Map<String, String[]> map = fileService.batchUploadFiles(files);
+        Map<String, List<String>> map = fileService.batchUploadFiles(files);
         Map<String, Boolean> ret = new HashMap<>();
-        for (Map.Entry<String, String[]> entry : map.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : map.entrySet()) {
             String fileName = entry.getKey();
-            String[] textArray = entry.getValue();
+            List<String> textArray = entry.getValue();
             for (String s : textArray) {
                 ArchiveDto archive = new ArchiveDto();
                 // 生成嵌入向量
