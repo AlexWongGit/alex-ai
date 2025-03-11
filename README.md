@@ -1,1 +1,1 @@
-simple rag demo
+# Simple RAG Demo
