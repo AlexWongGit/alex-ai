@@ -34,7 +34,7 @@ public class FileServiceImpl implements FileService {
         for (Map.Entry<String, File> entry : fileMap.entrySet()) {
             String fileName = entry.getKey();
             File file = entry.getValue();
-            List<String> splitFiles = splitFile(file, FileTypeEnum.getFileType(file.getName()));
+            List<String> splitFiles = splitFile(file, FileTypeEnum.getFileType(fileName));
             ret.put(fileName, splitFiles);
         }
         return ret;
