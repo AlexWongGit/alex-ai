@@ -13,9 +13,12 @@ import org.alex.vec.service.MilvusService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.document.Document;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -117,8 +120,7 @@ public class RagServiceImpl implements RagService {
         PromptTemplate promptTemplate = new PromptTemplate(PromptTemplateConstants.GET_KEYWORDS_TEMPLATE);
         Prompt prompt1 = promptTemplate.create(Map.of("question", question));
         ChatResponse chatResponse = qWenClient.call(prompt1);
-        String resp = chatResponse.getResult().toString();
-        String keyword = extractKeywords(resp);
+        String keyword = extractKeywords(chatResponse.getResult().getOutput().getText());
         if (keyword.isEmpty()) {
             keyword = question;
         }
@@ -131,27 +133,20 @@ public class RagServiceImpl implements RagService {
         String searchResult = milvusService.searchSimilarity(embedding, null, keyword);
 
         // 步骤 4: 信息增强与整合
-
-
+        String context = searchResult != null ? searchResult: "";
 
         // 步骤 5: 将搜索结果和问题一起发送给推理模型
         String systemPrompt = "你需要根据提供的上下文准确回答用户的问题。";
-        String context = searchResult != null? searchResult : "";
         String userPrompt = "问题: " + question + "\n上下文: " + context;
+        Prompt prompt = new Prompt(new SystemMessage(systemPrompt), new UserMessage(userPrompt));
         // 步骤 6: 自然语言生成, 获取模型生成的答案
-        ChatResponse response = ChatClient.create(deepSeekClient)
-            .prompt()
-            .system(systemPrompt)
-            .user(userPrompt)
+        ChatResponse response = ChatClient.create(qWenClient)
+            .prompt(prompt)
             //.tools(functionBeanNames)
             // 历史问答
-            .advisors(advisorSpec -> fillHistory(advisorSpec, "12345")).call().chatResponse();
+            //.advisors(advisorSpec -> fillHistory(advisorSpec, "12345"))
+            .call().chatResponse();
         return response.getResult().toString();
-    }
-
-    @SneakyThrows
-    public String toJson(ChatResponse response) {
-        return objectMapper.writeValueAsString(response);
     }
 
     public void fillHistory(ChatClient.AdvisorSpec advisorSpec, String sessionId) {
@@ -164,16 +159,14 @@ public class RagServiceImpl implements RagService {
 
 
     public static String extractKeywords(String input) {
-        int startIndex = input.lastIndexOf("关键字：");
+        int startIndex = input.lastIndexOf("关键词：");
         if (startIndex == -1) {
             return "";
         }
-        startIndex += "关键字：".length();
-        int endIndex = input.lastIndexOf("回答完毕");
+        startIndex += "关键词：".length();
+        int endIndex = input.lastIndexOf("、回答完毕");
         if (endIndex == -1) {
             endIndex = input.length();
-        } else {
-            endIndex -= "回答完毕".length();
         }
         if (startIndex >= endIndex) {
             return "";
