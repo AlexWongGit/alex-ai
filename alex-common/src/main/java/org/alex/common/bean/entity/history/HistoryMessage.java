@@ -24,12 +24,14 @@ public class HistoryMessage {
     @TableField("conversation_id")
     private String conversationId;
 
-    @TableField("question")
-    private String question;
+    @TableField("message_id")
+    private String messageId;
 
-    @TableField("answer")
-    private String answer;
+    @TableField("text")
+    private String text;
 
+    @TableField("order")
+    private Long order;
     @TableField("metadata")
     private String metadata;
 
@@ -44,6 +46,7 @@ public class HistoryMessage {
 
     @TableField("create_time")
     private Date createTime;
+
 
 
     public String getConversationId() {
@@ -113,27 +116,35 @@ public class HistoryMessage {
         this.createTime = createTime;
     }
 
-    public String getAnswer() {
-        return answer;
-    }
-
-    public void setAnswer(String answer) {
-        this.answer = answer;
-    }
-
-    public String getQuestion() {
-        return question;
-    }
-
-    public void setQuestion(String question) {
-        this.question = question;
-    }
-
     public String getMetadata() {
         return metadata;
     }
 
     public void setMetadata(String metadata) {
         this.metadata = metadata;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public String getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
+    }
+
+    public Long getOrder() {
+        return order;
+    }
+
+    public void setOrder(Long order) {
+        this.order = order;
     }
 }

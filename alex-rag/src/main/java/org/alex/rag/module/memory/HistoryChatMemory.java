@@ -2,6 +2,7 @@ package org.alex.rag.module.memory;
 
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.alex.common.bean.entity.history.HistoryMessage;
 import org.alex.service.HistoryMessageService;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -9,9 +10,8 @@ import org.springframework.ai.chat.messages.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -26,42 +26,70 @@ public class HistoryChatMemory implements ChatMemory {
 
     public static Message toMessage(HistoryMessage aiMessage) {
         if (aiMessage.getMessageType().equals(MessageType.ASSISTANT)) {
-            return new AssistantMessage(aiMessage.getAnswer());
+            return new AssistantMessage(aiMessage.getText());
         }
         if (aiMessage.getMessageType().equals(MessageType.USER)) {
-            return new UserMessage(aiMessage.getAnswer());
+            return new UserMessage(aiMessage.getText());
         }
         if (aiMessage.getMessageType().equals(MessageType.SYSTEM)) {
-            return new SystemMessage(aiMessage.getAnswer());
+            return new SystemMessage(aiMessage.getText());
         }
         throw new RuntimeException("不支持的消息类型");
     }
 
-    public static HistoryMessage toHistoryMessage(Message message, String sessionId) {
+    private static HistoryMessage buildHistoryMessage(Message message, String sessionId, UUID messageId, String text, long order) {
         HistoryMessage historyMessage = new HistoryMessage();
-        if (message instanceof AssistantMessage assistantMessage) {
-            historyMessage.setConversationId(sessionId);
-            historyMessage.setMessageType(MessageType.ASSISTANT);
-            historyMessage.setAnswer(assistantMessage.getText());
-            historyMessage.setMetadata(assistantMessage.getMetadata().toString());
-        } else if (message instanceof UserMessage userMessage) {
-            historyMessage.setConversationId(sessionId);
-            historyMessage.setMessageType(MessageType.USER);
-            historyMessage.setAnswer(userMessage.getText());
-            historyMessage.setMetadata(userMessage.getMetadata().toString());
-        }else if (message instanceof SystemMessage systemMessage) {
-            historyMessage.setConversationId(sessionId);
-            historyMessage.setMessageType(MessageType.SYSTEM);
-            historyMessage.setAnswer(systemMessage.getText());
-            historyMessage.setMetadata(systemMessage.getMetadata().toString());
-        }  else {
-            throw new RuntimeException("不支持的消息类型");
+        historyMessage.setText(text);
+        historyMessage.setMessageType(getMessageType(message));
+        historyMessage.setMessageId(messageId.toString());
+        historyMessage.setConversationId(sessionId);
+        historyMessage.setMetadata(message.getMetadata().toString());
+
+        Date now = new Date();
+        historyMessage.setCreateTime(now);
+        historyMessage.setAskTime(now);
+        historyMessage.setAnswerTime(now);
+        historyMessage.setOrder(order);
+
+        return historyMessage;
+    }
+
+    private static MessageType getMessageType(Message message) {
+        if (message instanceof AssistantMessage) {
+            return MessageType.ASSISTANT;
+        }
+        if (message instanceof UserMessage) {
+            return MessageType.USER;
+        }
+        if (message instanceof SystemMessage) {
+            return MessageType.SYSTEM;
+        }
+        throw new RuntimeException("不支持的消息类型: " + message.getClass().getSimpleName());
+    }
+
+    public static List<HistoryMessage> toHistoryMessage(Message message, String sessionId) {
+        List<HistoryMessage> historyMessages = new ArrayList<>();
+        UUID messageId = UUID.randomUUID();
+        List<String> splitTexts = splitString(message.getText(), 4000);
+
+        long order = 0;
+        for (String text : splitTexts) {
+            HistoryMessage historyMessage = buildHistoryMessage(message, sessionId, messageId, text, order++);
+            historyMessages.add(historyMessage);
         }
 
-        historyMessage.setCreateTime(new Date());
-        historyMessage.setAskTime(new Date());
-        historyMessage.setAnswerTime(new Date());
-        return historyMessage;
+        return historyMessages;
+    }
+
+    public static List<String> splitString(String input, int chunkSize) {
+        List<String> result = new ArrayList<>();
+        int length = input.length();
+
+        for (int i = 0; i < length; i += chunkSize) {
+            result.add(input.substring(i, Math.min(length, i + chunkSize)));
+        }
+
+        return result;
     }
 
     @Override
@@ -69,21 +97,53 @@ public class HistoryChatMemory implements ChatMemory {
         if (CollUtil.isEmpty(messages)) {
             return;
         }
-        List<HistoryMessage> aiMessages = messages.stream().map(message -> toHistoryMessage(message, conversationId)).toList();
+        List<HistoryMessage> aiMessages = messages.stream().map(message -> toHistoryMessage(message, conversationId)).flatMap(List::stream).toList();
+
         historyMessageService.saveBatch(aiMessages);
     }
 
     @Override
     public List<Message> get(String conversationId, int lastN) {
         LambdaQueryWrapper<HistoryMessage> qw = new LambdaQueryWrapper<>();
-        qw.eq(HistoryMessage::getConversationId, conversationId)
+        qw.select(HistoryMessage::getMessageId)
+            .eq(HistoryMessage::getConversationId, conversationId)
+            .groupBy(HistoryMessage::getMessageId)
             .orderByDesc(HistoryMessage::getAskTime)
-            .last("limit " + lastN);
-        List<HistoryMessage> historyMessages = historyMessageService.list(qw);
-        if (CollUtil.isEmpty(historyMessages)) {
+            .last("limit 10");
+
+        List<HistoryMessage> uniqueMessages = historyMessageService.list(qw);
+        if (CollUtil.isEmpty(uniqueMessages)) {
             return new ArrayList<>();
         }
-        return historyMessages.stream().map(HistoryChatMemory::toMessage).toList();
+
+        List<String> messageIds = uniqueMessages.stream()
+            .map(HistoryMessage::getMessageId)
+            .toList();
+
+        LambdaQueryWrapper<HistoryMessage> fullQw = new LambdaQueryWrapper<>();
+        fullQw.in(HistoryMessage::getMessageId, messageIds)
+            .orderByAsc(HistoryMessage::getOrder);
+
+        List<HistoryMessage> allMessages = historyMessageService.list(fullQw);
+
+        // 按 messageId 进行分组，并拼接 text 字段
+        Map<String, String> mergedTexts = allMessages.stream()
+            .collect(Collectors.groupingBy(
+                HistoryMessage::getMessageId,
+                LinkedHashMap::new,
+                Collectors.mapping(HistoryMessage::getText, Collectors.joining(""))
+            ));
+
+        // 遍历所有消息，将拼接后的 text 存入 order = 1 的消息
+        List<HistoryMessage> resultMessages = new ArrayList<>();
+        for (HistoryMessage msg : allMessages) {
+            if (msg.getOrder() == 0) {
+                msg.setText(mergedTexts.get(msg.getMessageId()));
+                resultMessages.add(msg);
+            }
+        }
+
+        return resultMessages.stream().map(HistoryChatMemory::toMessage).toList();
     }
 
     @Override

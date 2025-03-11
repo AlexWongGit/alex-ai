@@ -2,6 +2,8 @@ package org.alex.vec.service;
 
 
 import org.alex.common.bean.dto.ArchiveDto;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.SearchRequest;
 
 import java.util.List;
 
@@ -22,7 +24,6 @@ public interface MilvusService {
     void createIndex(String collectionName, String indexName);
 
     Boolean insert(List<ArchiveDto> data);
-
     void loadCollection(String collectionName);
 
     void loadPartitions(String collectionName, String partitionsName);
@@ -35,4 +36,13 @@ public interface MilvusService {
 
     String searchSimilarity(float[] arcsoftFeature, Integer orgId, String question);
 
+
+    /**-------------------spring ai milvus 的api---------------------**/
+
+    List<Document> searchSimilarity(String question);
+    List<Document> searchSimilarity(SearchRequest request);
+
+    void add(List<Document> documents);
+
+    void delete(List<String> ids);
 }

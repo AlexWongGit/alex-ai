@@ -27,6 +27,9 @@ import io.milvus.v2.service.vector.response.DeleteResp;
 import io.milvus.v2.service.vector.response.InsertResp;
 import io.milvus.v2.service.vector.response.SearchResp;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -42,10 +45,14 @@ public class MilvusServiceImpl implements MilvusService {
 
     private final MilvusClientV2 client;
 
+    private final VectorStore vectorStore;
+
+
     private final Gson gson = new Gson();
 
-    public MilvusServiceImpl(MilvusClientV2 client) {
+    public MilvusServiceImpl(MilvusClientV2 client,VectorStore vectorStore) {
         this.client = client;
+        this.vectorStore = vectorStore;
     }
 
     @Override
@@ -210,6 +217,8 @@ public class MilvusServiceImpl implements MilvusService {
         return true;
     }
 
+
+
     @Override
     public void loadCollection(String collectionName) {
         LoadCollectionReq loadCollectionReq = LoadCollectionReq.builder()
@@ -259,7 +268,7 @@ public class MilvusServiceImpl implements MilvusService {
 
     @Override
     public String searchSimilarity(float[] arcsoftFeature, Integer orgId, String question) {
-        List<Float> arcsoftToFloat = MilvusUtil.arcsoftToFloat(arcsoftFeature);
+        //List<Float> arcsoftToFloat = MilvusUtil.arcsoftToFloat(arcsoftFeature);
         //BaseVector baseVector = new FloatVec(arcsoftToFloat);
         BaseVector baseVector = new EmbeddedText(question);
         Map<String,Object> searchParams = new HashMap<>();
@@ -268,7 +277,7 @@ public class MilvusServiceImpl implements MilvusService {
                 .collectionName(MilvusConstants.COLLECTION_NAME)
                 .data(Collections.singletonList(baseVector))
                 .annsField("sparse")
-                .topK(10)
+                .topK(4)
                 .searchParams(searchParams)
                 // 指定搜索的过滤条件
                 //.filter("archive_id>100")
@@ -302,5 +311,25 @@ public class MilvusServiceImpl implements MilvusService {
             return gson.toJson(retMap);
         }
         return null;
+    }
+
+    @Override
+    public List<Document> searchSimilarity(String question) {
+        return vectorStore.similaritySearch(question);
+    }
+
+    @Override
+    public List<Document> searchSimilarity(SearchRequest request) {
+        return vectorStore.similaritySearch(request);
+    }
+
+    @Override
+    public void add(List<Document> documents) {
+        vectorStore.add(documents);
+    }
+
+    @Override
+    public void delete(List<String> ids) {
+        vectorStore.delete(ids);
     }
 }

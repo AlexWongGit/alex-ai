@@ -112,18 +112,18 @@ public class RagServiceImpl implements RagService {
 
     @Override
     public String performRag(String question) {
+
         // 步骤 1: 使用大模型提取关键词生成向量
         PromptTemplate promptTemplate = new PromptTemplate(PromptTemplateConstants.GET_KEYWORDS_TEMPLATE);
         Prompt prompt1 = promptTemplate.create(Map.of("question", question));
-
         ChatResponse chatResponse = qWenClient.call(prompt1);
-
         String resp = chatResponse.getResult().toString();
         String keyword = extractKeywords(resp);
         if (keyword.isEmpty()) {
             keyword = question;
         }
         log.info("关键词：{}", keyword);
+
         // 步骤 2: 生成关键字的嵌入向量
         float[] embedding = embeddingModel.embed(keyword);
 
@@ -136,17 +136,16 @@ public class RagServiceImpl implements RagService {
 
         // 步骤 5: 将搜索结果和问题一起发送给推理模型
         String systemPrompt = "你需要根据提供的上下文准确回答用户的问题。";
-
         String context = searchResult != null? searchResult : "";
         String userPrompt = "问题: " + question + "\n上下文: " + context;
-        // 步骤 6: 自然语言生成, 获取模型生成的答案transformer、rnn
-        //String[] functionBeanNames = new String[0];
-        ChatResponse response = ChatClient.create(deepSeekClient).prompt().system(systemPrompt).user(userPrompt)
+        // 步骤 6: 自然语言生成, 获取模型生成的答案
+        ChatResponse response = ChatClient.create(deepSeekClient)
+            .prompt()
+            .system(systemPrompt)
+            .user(userPrompt)
             //.tools(functionBeanNames)
-            .advisors(advisorSpec -> {
-                fillHistory(advisorSpec, "12345");
-                //useVectorStore(advisorSpec, aiMessageWrapper.getParams().getEnableVectorStore());
-            }).call().chatResponse();
+            // 历史问答
+            .advisors(advisorSpec -> fillHistory(advisorSpec, "12345")).call().chatResponse();
         return response.getResult().toString();
     }
 
