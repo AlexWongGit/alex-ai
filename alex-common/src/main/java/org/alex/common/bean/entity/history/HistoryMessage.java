@@ -30,8 +30,8 @@ public class HistoryMessage {
     @TableField("text")
     private String text;
 
-    @TableField("order")
-    private Long order;
+    @TableField("message_order")
+    private Long messageOrder;
     @TableField("metadata")
     private String metadata;
 
@@ -140,11 +140,11 @@ public class HistoryMessage {
         this.messageId = messageId;
     }
 
-    public Long getOrder() {
-        return order;
+    public Long getMessageOrder() {
+        return messageOrder;
     }
 
-    public void setOrder(Long order) {
-        this.order = order;
+    public void setMessageOrder(Long messageOrder) {
+        this.messageOrder = messageOrder;
     }
 }

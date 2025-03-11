@@ -2,7 +2,7 @@ package org.alex.rag.module.memory;
 
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.alex.common.bean.entity.history.HistoryMessage;
 import org.alex.service.HistoryMessageService;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -49,7 +49,7 @@ public class HistoryChatMemory implements ChatMemory {
         historyMessage.setCreateTime(now);
         historyMessage.setAskTime(now);
         historyMessage.setAnswerTime(now);
-        historyMessage.setOrder(order);
+        historyMessage.setMessageOrder(order);
 
         return historyMessage;
     }
@@ -104,14 +104,12 @@ public class HistoryChatMemory implements ChatMemory {
 
     @Override
     public List<Message> get(String conversationId, int lastN) {
-        LambdaQueryWrapper<HistoryMessage> qw = new LambdaQueryWrapper<>();
-        qw.select(HistoryMessage::getMessageId,
-                lambda -> "MAX(ask_time) AS ask_time")
-            .eq(HistoryMessage::getConversationId, conversationId)
-            .groupBy(HistoryMessage::getMessageId)
-            .orderByDesc(lambda -> "MAX(ask_time)")
-            .last("limit 10");
-
+        QueryWrapper<HistoryMessage> qw = new QueryWrapper<>();
+        qw.select("message_id", "MAX(ask_time) AS ask_time")
+            .eq("conversation_id", conversationId)
+            .groupBy("message_id")
+            .orderByDesc("ask_time")
+            .last("LIMIT 10");
 
         List<HistoryMessage> uniqueMessages = historyMessageService.list(qw);
         if (CollUtil.isEmpty(uniqueMessages)) {
@@ -122,9 +120,9 @@ public class HistoryChatMemory implements ChatMemory {
             .map(HistoryMessage::getMessageId)
             .toList();
 
-        LambdaQueryWrapper<HistoryMessage> fullQw = new LambdaQueryWrapper<>();
-        fullQw.in(HistoryMessage::getMessageId, messageIds)
-            .orderByAsc(HistoryMessage::getOrder);
+        QueryWrapper<HistoryMessage> fullQw = new QueryWrapper<>();
+        fullQw.in("message_id", messageIds)
+            .orderByAsc("message_order");
 
         List<HistoryMessage> allMessages = historyMessageService.list(fullQw);
 
@@ -139,7 +137,7 @@ public class HistoryChatMemory implements ChatMemory {
         // 遍历所有消息，将拼接后的 text 存入 order = 1 的消息
         List<HistoryMessage> resultMessages = new ArrayList<>();
         for (HistoryMessage msg : allMessages) {
-            if (msg.getOrder() == 0) {
+            if (msg.getMessageOrder() == 0) {
                 msg.setText(mergedTexts.get(msg.getMessageId()));
                 resultMessages.add(msg);
             }
