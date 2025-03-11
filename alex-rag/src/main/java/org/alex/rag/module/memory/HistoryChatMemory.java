@@ -105,11 +105,13 @@ public class HistoryChatMemory implements ChatMemory {
     @Override
     public List<Message> get(String conversationId, int lastN) {
         LambdaQueryWrapper<HistoryMessage> qw = new LambdaQueryWrapper<>();
-        qw.select(HistoryMessage::getMessageId)
+        qw.select(HistoryMessage::getMessageId,
+                lambda -> "MAX(ask_time) AS ask_time")
             .eq(HistoryMessage::getConversationId, conversationId)
             .groupBy(HistoryMessage::getMessageId)
-            .orderByDesc(HistoryMessage::getAskTime)
+            .orderByDesc(lambda -> "MAX(ask_time)")
             .last("limit 10");
+
 
         List<HistoryMessage> uniqueMessages = historyMessageService.list(qw);
         if (CollUtil.isEmpty(uniqueMessages)) {
