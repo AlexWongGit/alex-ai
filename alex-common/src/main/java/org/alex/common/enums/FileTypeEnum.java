@@ -25,11 +25,7 @@ public enum FileTypeEnum {
     JSON("json"),
     YAML("yaml"),
     XML("xml"),
-    SQL("sql"),
-    PY("py"),
-    JAVA("java"),
-    CPP("cpp");
-
+    SQL("sql");
     private final String type;
 
     FileTypeEnum(String type) {
