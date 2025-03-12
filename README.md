@@ -1,3 +1,3 @@
 # Simple RAG Demo
 
-![RAG](RAG.png)
+![RAG](img/RAG.png)
