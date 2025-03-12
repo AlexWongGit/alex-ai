@@ -3,12 +3,13 @@ package org.alex.rag.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.alex.common.enums.FileTypeEnum;
+import org.alex.common.utils.FileUtil;
+import org.alex.common.utils.VectorUtil;
 import org.alex.dataprocess.service.FileService;
 import org.alex.common.bean.dto.ArchiveDto;
 import org.alex.rag.module.memory.HistoryChatMemory;
 import org.alex.rag.module.prompt.PromptTemplateConstants;
 import org.alex.rag.service.RagService;
-import org.alex.common.utils.MilvusUtil;
 import org.alex.vec.service.MilvusService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -58,7 +59,7 @@ public class RagServiceImpl implements RagService {
 
     @Override
     public Boolean uploadFileAndSaveToMilvus(MultipartFile file) throws IOException {
-        File tempFile = MilvusUtil.convert(file);
+        File tempFile = FileUtil.convert(file);
         try
         {
             // 使用转换后的 File 对象进行后续操作

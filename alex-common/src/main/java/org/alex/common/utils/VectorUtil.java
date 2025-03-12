@@ -14,7 +14,7 @@ import java.util.List;
  * @Author wangzf
  * @Date 2025/2/27
  */
-public class MilvusUtil {
+public class VectorUtil {
 
 
     public static List<Float> arcsoftToFloat(float[] floatArray) {
@@ -47,13 +47,5 @@ public class MilvusUtil {
 
         // 将缓冲区中的字节复制到字节数组中
         return buffer.array();
-    }
-
-    public static File convert(MultipartFile multipartFile) throws IOException {
-        // 创建一个临时文件
-        File tempFile = File.createTempFile("temp", null);
-        // 将 MultipartFile 内容传输到临时文件
-        multipartFile.transferTo(tempFile);
-        return tempFile;
     }
 }

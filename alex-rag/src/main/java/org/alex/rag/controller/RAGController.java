@@ -1,16 +1,15 @@
 package org.alex.rag.controller;
 
-import org.alex.common.utils.MilvusUtil;
+import org.alex.common.utils.FileUtil;
+import org.alex.common.utils.VectorUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.alex.rag.service.RagService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import reactor.core.publisher.Flux;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +47,7 @@ public class RAGController {
         try {
             for (int i = 0; i < files.length; i++) {
                 try {
-                    File tempFile = MilvusUtil.convert(files[i]);
+                    File tempFile = FileUtil.convert(files[i]);
                     fileMap.put(files[i].getOriginalFilename(), tempFile);
                     tempFiles.add(tempFile);
                 } catch (IOException e) {

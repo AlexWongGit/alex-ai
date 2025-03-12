@@ -3,8 +3,8 @@ package org.alex.vec.service.impl;
 import cn.hutool.core.util.PrimitiveArrayUtil;
 import org.alex.common.bean.dto.ArchiveDto;
 import org.alex.common.constant.MilvusConstants;
+import org.alex.common.utils.VectorUtil;
 import org.alex.vec.service.MilvusService;
-import org.alex.common.utils.MilvusUtil;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -193,7 +193,7 @@ public class MilvusServiceImpl implements MilvusService {
                 JsonObject dict = new JsonObject();
                 //dict.addProperty(MilvusConstants.Field.ARCHIVE_ID, dto.getArchiveId());
                 dict.add(MilvusConstants.Field.ORG_ID, new JsonPrimitive(dto.getOrgId()));
-                List<Float> vectors = MilvusUtil.arcsoftToFloat(dto.getArcsoftFeature());
+                List<Float> vectors = VectorUtil.arcsoftToFloat(dto.getArcsoftFeature());
                 dict.add(MilvusConstants.Field.ARCHIVE_FEATURE, gson.toJsonTree(vectors));
                 dict.addProperty(MilvusConstants.Field.TEXT, dto.getText());
                 dict.addProperty(MilvusConstants.Field.FILE_NAME, dto.getFileName());
@@ -268,7 +268,7 @@ public class MilvusServiceImpl implements MilvusService {
 
     @Override
     public String searchSimilarity(float[] arcsoftFeature, Integer orgId, String question) {
-        //List<Float> arcsoftToFloat = MilvusUtil.arcsoftToFloat(arcsoftFeature);
+        //List<Float> arcsoftToFloat = VectorUtil.arcsoftToFloat(arcsoftFeature);
         //BaseVector baseVector = new FloatVec(arcsoftToFloat);
         BaseVector baseVector = new EmbeddedText(question);
         Map<String,Object> searchParams = new HashMap<>();
