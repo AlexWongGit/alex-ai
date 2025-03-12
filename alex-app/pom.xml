@@ -25,7 +25,7 @@
         </dependency>
         <dependency>
             <groupId>org.alex</groupId>
-            <artifactId>alex-data-process</artifactId>
+            <artifactId>alex-file-process</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
@@ -36,6 +36,11 @@
         <dependency>
             <groupId>org.alex</groupId>
             <artifactId>alex-rag</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.alex</groupId>
+            <artifactId>alex-serv</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>

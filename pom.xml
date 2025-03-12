@@ -6,7 +6,7 @@
     <artifactId>alex-ai</artifactId>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>alex-data-process</module>
+        <module>alex-file-process</module>
         <module>alex-common</module>
         <module>alex-rag</module>
         <module>alex-vector-database</module>
