@@ -43,7 +43,7 @@ public class RagServiceImpl implements RagService {
 
     @Resource
     @Qualifier("qWenClient")
-    private  OllamaChatModel qWenClient;
+    private OllamaChatModel qWenClient;
 
     @Resource
     private MilvusService milvusService;
@@ -59,13 +59,11 @@ public class RagServiceImpl implements RagService {
     @Override
     public Boolean uploadFileAndSaveToMilvus(MultipartFile file) throws IOException {
         File tempFile = FileUtil.convert(file);
-        try
-        {
+        try {
             // 使用转换后的 File 对象进行后续操作
             List<String> textArray = fileService.splitFile(tempFile, FileTypeEnum.getFileType(file.getOriginalFilename()));
             log.info("转换后的文件路径: {}" + tempFile.getAbsolutePath());
-            for (String s : textArray)
-            {
+            for (String s : textArray) {
                 ArchiveDto archive = new ArchiveDto();
                 // 生成嵌入向量
                 float[] embedding = embeddingModel.embed(s);
@@ -75,13 +73,10 @@ public class RagServiceImpl implements RagService {
                 archive.setText(s);
                 milvusService.insert(Collections.singletonList(archive));
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
-        }
-        finally {
+        } finally {
             // 删除临时文件
             tempFile.delete();
         }
@@ -90,23 +85,34 @@ public class RagServiceImpl implements RagService {
 
     @Override
     public Map<String, Boolean> batchUploadFileAndSaveToMilvus(Map<String, File> files) {
-        Map<String, List<String>> map = fileService.batchUploadFiles(files);
-        Map<String, Boolean> ret = new HashMap<>();
+        Map<String, Boolean> ret = new HashMap<>(1);
+
+        Map<String, List<String>> map = fileService.batchSplitFiles(files);
         for (Map.Entry<String, List<String>> entry : map.entrySet()) {
             String fileName = entry.getKey();
             List<String> textArray = entry.getValue();
+            if (textArray == null) {
+                ret.put(fileName, false);
+                continue;
+            }
             for (String s : textArray) {
-                ArchiveDto archive = new ArchiveDto();
-                // 生成嵌入向量
-                float[] embedding = embeddingModel.embed(s);
-                archive.setFileName(fileName);
-                archive.setArcsoftFeature(embedding);
-                archive.setOrgId(1);
-                archive.setText(s);
-                Boolean insert = milvusService.insert(Collections.singletonList(archive));
-                ret.put(fileName, insert);
+                try {
+                    ArchiveDto archive = new ArchiveDto();
+                    // 生成嵌入向量
+                    float[] embedding = embeddingModel.embed(s);
+                    archive.setFileName(fileName);
+                    archive.setArcsoftFeature(embedding);
+                    archive.setOrgId(1);
+                    archive.setText(s);
+                    Boolean insert = milvusService.insert(Collections.singletonList(archive));
+                    ret.put(fileName, insert);
+                } catch (Exception e) {
+                    ret.put(fileName, false);
+                    e.printStackTrace();
+                }
             }
         }
+
         return ret;
     }
 
@@ -130,7 +136,7 @@ public class RagServiceImpl implements RagService {
         String searchResult = milvusService.searchSimilarity(embedding, null, keyword);
 
         // 步骤 4: 信息增强与整合
-        String context = searchResult != null ? searchResult: "";
+        String context = searchResult != null ? searchResult : "";
 
         // 步骤 5: 将搜索结果和问题一起发送给推理模型
         String systemPrompt = "你需要根据提供的上下文准确回答用户的问题。";
@@ -139,13 +145,10 @@ public class RagServiceImpl implements RagService {
         //String userPrompt = "问题: " + question + "\n上下文: " + context;
         //Prompt prompt = new Prompt(new SystemMessage(systemPrompt), new UserMessage(userPrompt));
         // 步骤 6: 自然语言生成, 获取模型生成的答案
-        ChatResponse response = ChatClient.create(deepSeekClient)
-            .prompt(userPrompt)
-            .system(systemPrompt)
+        ChatResponse response = ChatClient.create(deepSeekClient).prompt(userPrompt).system(systemPrompt)
             //.tools(functionBeanNames)
             // 历史问答
-            .advisors(advisorSpec -> fillHistory(advisorSpec, "12345"))
-            .call().chatResponse();
+            .advisors(advisorSpec -> fillHistory(advisorSpec, "12345")).call().chatResponse();
         return response.getResult().toString();
     }
 
@@ -156,7 +159,6 @@ public class RagServiceImpl implements RagService {
         // MessageChatMemoryAdvisor会在消息发送给大模型之前，从ChatMemory中获取会话的历史消息，然后一起发送给大模型。
         advisorSpec.advisors(new MessageChatMemoryAdvisor(chatMemory, sessionId, 10));
     }
-
 
     public static String extractKeywords(String input) {
         int startIndex = input.lastIndexOf("关键词：");

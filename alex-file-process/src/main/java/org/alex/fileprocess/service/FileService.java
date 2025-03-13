@@ -16,5 +16,5 @@ public interface FileService {
 
     List<String> splitFile(File file, FileTypeEnum fileType);
 
-    Map<String, List<String>> batchUploadFiles(Map<String, File> fileMap );
+    Map<String, List<String>> batchSplitFiles(Map<String, File> fileMap );
 }

@@ -37,13 +37,20 @@ public class FileServiceImpl implements FileService {
 
 
     @Override
-    public Map<String, List<String>> batchUploadFiles(Map<String, File> fileMap) {
+    public Map<String, List<String>> batchSplitFiles(Map<String, File> fileMap) {
         Map<String, List<String>> ret = new HashMap<>(1);
         for (Map.Entry<String, File> entry : fileMap.entrySet()) {
-            String fileName = entry.getKey();
-            File file = entry.getValue();
-            List<String> splitFiles = splitFile(file, FileTypeEnum.getFileType(fileName));
-            ret.put(fileName, splitFiles);
+            try {
+                String fileName = entry.getKey();
+                File file = entry.getValue();
+                List<String> splitFiles = splitFile(file, FileTypeEnum.getFileType(fileName));
+                ret.put(fileName, splitFiles);
+            }
+            catch (Exception e)
+            {
+                ret.put(entry.getKey(), null);
+                e.printStackTrace();
+            }
         }
         return ret;
     }
