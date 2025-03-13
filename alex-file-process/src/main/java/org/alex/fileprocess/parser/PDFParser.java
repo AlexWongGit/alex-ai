@@ -1,4 +1,4 @@
-package org.alex.dataprocess.processor;
+package org.alex.fileprocess.parser;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;

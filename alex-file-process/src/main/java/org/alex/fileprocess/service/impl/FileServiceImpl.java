@@ -1,9 +1,11 @@
-package org.alex.dataprocess.service.impl;
+package org.alex.fileprocess.service.impl;
 
 import org.alex.common.enums.FileTypeEnum;
-import org.alex.dataprocess.processor.FileParser;
-import org.alex.dataprocess.processor.PDFParser;
-import org.alex.dataprocess.service.FileService;
+import org.alex.fileprocess.parser.DOCParser;
+import org.alex.fileprocess.parser.FileParser;
+import org.alex.fileprocess.parser.PDFParser;
+import org.alex.fileprocess.parser.XLSXParser;
+import org.alex.fileprocess.service.FileService;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -21,6 +23,12 @@ public class FileServiceImpl implements FileService {
         FileParser parser;
         if (FileTypeEnum.PDF == fileType) {
             parser = new PDFParser();
+        } else if (FileTypeEnum.DOC == fileType)
+        {
+            parser = new DOCParser();
+        } else if (FileTypeEnum.XLSX == fileType || FileTypeEnum.XLS == fileType)
+        {
+            parser = new XLSXParser();
         } else {
             throw new RuntimeException("不支持的文件类型");
         }
