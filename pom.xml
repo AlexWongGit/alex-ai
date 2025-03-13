@@ -6,12 +6,12 @@
     <artifactId>alex-ai</artifactId>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>alex-file-process</module>
         <module>alex-common</module>
-        <module>alex-rag</module>
+        <module>alex-file-process</module>
         <module>alex-vector-database</module>
-        <module>alex-app</module>
+        <module>alex-rag</module>
         <module>alex-serv</module>
+        <module>alex-app</module>
     </modules>
     <packaging>pom</packaging>
 
