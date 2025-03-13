@@ -1,4 +1,4 @@
-package org.alex.service;
+package org.alex.rag.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.alex.common.bean.entity.history.HistoryMessage;

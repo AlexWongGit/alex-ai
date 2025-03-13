@@ -1,9 +1,9 @@
-package org.alex.service.impl;
+package org.alex.rag.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.alex.common.bean.entity.history.HistoryMessage;
-import org.alex.mapper.HistoryMessageMapper;
-import org.alex.service.HistoryMessageService;
+import org.alex.rag.mapper.HistoryMessageMapper;
+import org.alex.rag.service.HistoryMessageService;
 import org.springframework.stereotype.Service;
 
 /**

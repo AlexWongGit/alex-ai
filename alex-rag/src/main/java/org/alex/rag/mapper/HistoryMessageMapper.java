@@ -1,4 +1,4 @@
-package org.alex.mapper;
+package org.alex.rag.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.alex.common.bean.entity.history.HistoryMessage;

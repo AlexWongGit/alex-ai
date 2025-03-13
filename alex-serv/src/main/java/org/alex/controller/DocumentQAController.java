@@ -1,4 +1,4 @@
-package org.alex.rag.controller;
+package org.alex.controller;
 
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;

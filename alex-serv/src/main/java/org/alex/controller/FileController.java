@@ -1,12 +1,11 @@
-package org.alex.rag.controller;
+package org.alex.controller;
 
-import org.alex.common.utils.FileUtil;
-import org.alex.common.utils.VectorUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.alex.rag.service.RagService;
+import org.alex.common.utils.FileUtil;
+import org.alex.fileprocess.service.FileService;
+import org.alex.service.AlexServService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,25 +18,24 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * TODO <br>
- *
  * @Author wangzf
- * @Date 2025/2/27
+ * @Date 2025/3/13
  */
 @RestController
-@RequestMapping("rag")
-@Slf4j
-public class RAGController {
+@RequestMapping("file")
+public class FileController {
 
     @Autowired
-    private RagService ragService;
+    private AlexServService alexServService;
+
+    @Autowired
 
     @RequestMapping("upload")
     public String uploadFileAndSaveToMilvus(@RequestPart("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             throw new RuntimeException("文件为空");
         }
-        return ragService.uploadFileAndSaveToMilvus(file) ? "上传成功" : "上传失败";
+        return alexServService.uploadFileAndSaveToMilvus(file) ? "上传成功" : "上传失败";
     }
 
     @RequestMapping("batchUpload")
@@ -54,17 +52,11 @@ public class RAGController {
                     e.printStackTrace();
                 }
             }
-            return ragService.batchUploadFileAndSaveToMilvus(fileMap);
+            return alexServService.batchUploadFileAndSaveToMilvus(fileMap);
         } finally {
             if (!tempFiles.isEmpty()) {
                 tempFiles.forEach(File::delete);
             }
         }
     }
-
-    @RequestMapping("ask")
-    public String searchTallestSimilarity(@RequestParam("question") String question) {
-        return ragService.performRag(question);
-    }
-
 }
