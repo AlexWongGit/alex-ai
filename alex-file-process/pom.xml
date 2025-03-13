@@ -12,6 +12,19 @@
     <artifactId>alex-file-process</artifactId>
     <name>文件处理模块</name>
     <description>负责文件的解析、分块等功能</description>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                    <compilerArgs>--enable-preview</compilerArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     <version>1.0-SNAPSHOT</version>
 
     <properties>

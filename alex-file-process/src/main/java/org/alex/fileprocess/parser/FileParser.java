@@ -1,5 +1,7 @@
 package org.alex.fileprocess.parser;
 
+import org.alex.common.enums.FileTypeEnum;
+
 import java.io.File;
 import java.util.List;
 
@@ -10,7 +12,7 @@ import java.util.List;
  */
 public interface FileParser {
 
-    List<String> split2Chunks(File file,int maxChunkSize);
+    List<String> split2Chunks(File file,int maxChunkSize, FileTypeEnum fileType);
 
     String getFileName(File file);
 

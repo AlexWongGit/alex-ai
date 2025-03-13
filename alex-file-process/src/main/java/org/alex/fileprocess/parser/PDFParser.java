@@ -1,5 +1,6 @@
 package org.alex.fileprocess.parser;
 
+import org.alex.common.enums.FileTypeEnum;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import java.io.File;
@@ -10,7 +11,7 @@ import java.util.List;
 public class PDFParser extends AbstractFileParser {
 
     @Override
-    public List<String> split2Chunks(File file, int maxChunkSize) {
+    public List<String> split2Chunks(File file, int maxChunkSize, FileTypeEnum fileType) {
         List<String> chunks = new ArrayList<>();
 
         if (maxChunkSize <= 0 || maxChunkSize > MAX_CHUNK_SIZE) {

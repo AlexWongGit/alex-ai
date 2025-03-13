@@ -1,5 +1,6 @@
 package org.alex.fileprocess.parser;
 
+import org.alex.common.enums.FileTypeEnum;
 import org.apache.poi.xwpf.usermodel.*;
 import java.io.*;
 import java.util.*;
@@ -8,7 +9,7 @@ import java.util.Base64;
 public class DOCParser extends AbstractFileParser {
 
     @Override
-    public List<String> split2Chunks(File file, int maxChunkSize) {
+    public List<String> split2Chunks(File file, int maxChunkSize, FileTypeEnum fileType) {
         List<String> chunks = new ArrayList<>();
 
         if (maxChunkSize <= 0 || maxChunkSize > MAX_CHUNK_SIZE) {
