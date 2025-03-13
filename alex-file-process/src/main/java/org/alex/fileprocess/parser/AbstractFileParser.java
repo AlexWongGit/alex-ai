@@ -1,6 +1,9 @@
 package org.alex.fileprocess.parser;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,5 +71,21 @@ public abstract class AbstractFileParser implements FileParser {
         }
 
         return chunks;
+    }
+
+    public boolean isOOXML(File file) {
+        try (FileInputStream fis = new FileInputStream(file)) {
+            // OOXML 文件都是 ZIP 格式（例如 .docx, .xlsx, .pptx）
+            return isZipFormat(fis);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean isZipFormat(InputStream inputStream) throws IOException {
+        byte[] signature = new byte[4];
+        inputStream.read(signature);
+        return (signature[0] == 'P' && signature[1] == 'K' && signature[2] == 3 && signature[3] == 4);
     }
 }

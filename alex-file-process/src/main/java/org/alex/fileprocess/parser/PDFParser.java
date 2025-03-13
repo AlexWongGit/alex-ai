@@ -8,6 +8,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ * @Author wangzf
+ * @Date 2025/3/13
+ */
 public class PDFParser extends AbstractFileParser {
 
     @Override

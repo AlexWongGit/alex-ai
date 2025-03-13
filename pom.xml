@@ -136,7 +136,11 @@
                 <artifactId>poi-ooxml</artifactId>
                 <version>5.2.3</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-scratchpad</artifactId>
+                <version>5.2.3</version>
+            </dependency>
             <dependency>
                 <groupId>com.vladsch.flexmark</groupId>
                 <artifactId>flexmark</artifactId>
@@ -146,6 +150,11 @@
                 <groupId>org.apache.pdfbox</groupId>
                 <artifactId>pdfbox</artifactId>
                 <version>2.0.27</version>
+            </dependency>
+            <dependency>
+                <groupId>org.commonmark</groupId>
+                <artifactId>commonmark</artifactId>
+                <version>0.21.0</version>
             </dependency>
             <!--        <dependency>
                         <groupId>dev.langchain4j</groupId>
