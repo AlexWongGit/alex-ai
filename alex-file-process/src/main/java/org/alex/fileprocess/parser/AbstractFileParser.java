@@ -17,13 +17,6 @@ public abstract class AbstractFileParser implements FileParser {
 
     public static final int MAX_CHUNK_SIZE = 1000;
 
-
-    @Override
-    public String getFileName(File file) {
-        return file.getName();
-    }
-
-
     /**
      * 清理文本，去除空白、特殊字符等
      */

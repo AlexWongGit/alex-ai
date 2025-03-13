@@ -14,8 +14,6 @@ public interface FileParser {
 
     List<String> split2Chunks(File file,int maxChunkSize, FileTypeEnum fileType);
 
-    String getFileName(File file);
-
     String cleanText(String text);
 
     List<String> splitText(String text, int maxChunkSize);
