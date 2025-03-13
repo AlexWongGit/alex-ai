@@ -38,7 +38,8 @@ public class FileServiceImpl implements FileService {
         if (parser == null) {
             throw new UnsupportedOperationException("不支持的文件类型: " + fileType);
         }
-
+        // 文件的识别
+        //
         return parser.split2Chunks(file, 1000, fileType);
     }
 
