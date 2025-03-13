@@ -15,22 +15,30 @@ import java.util.*;
 @Service
 public class FileServiceImpl implements FileService {
 
+    private static final Map<FileTypeEnum, FileParser> PARSER_MAP = new EnumMap<>(FileTypeEnum.class);
+
+    static {
+        PARSER_MAP.put(FileTypeEnum.PDF, new PDFParser());
+        PARSER_MAP.put(FileTypeEnum.DOC, new DOCParser());
+        PARSER_MAP.put(FileTypeEnum.DOCX, new DOCParser());
+        PARSER_MAP.put(FileTypeEnum.XLS, new ExcelParser());
+        PARSER_MAP.put(FileTypeEnum.XLSX, new ExcelParser());
+        PARSER_MAP.put(FileTypeEnum.PPT, new PPTParser());
+        PARSER_MAP.put(FileTypeEnum.PPTX, new PPTParser());
+        PARSER_MAP.put(FileTypeEnum.TXT, new TXTParser());
+        PARSER_MAP.put(FileTypeEnum.MD, new MDParser());
+        PARSER_MAP.put(FileTypeEnum.CSV, new CSVParser());
+        PARSER_MAP.put(FileTypeEnum.XML, new XMLParser());
+    }
+
     @Override
     public List<String> splitFile(File file, FileTypeEnum fileType) {
-        FileParser parser;
-        if (FileTypeEnum.PDF == fileType) {
-            parser = new PDFParser();
-        } else if (FileTypeEnum.DOC == fileType || FileTypeEnum.DOCX == fileType)
-        {
-            parser = new DOCParser();
-        } else if (FileTypeEnum.XLSX == fileType || FileTypeEnum.XLS == fileType)
-        {
-            parser = new ExcelParser();
-        } else if (FileTypeEnum.PPT == fileType || FileTypeEnum.PPTX == fileType) {
-            parser = new PPTParser();
-        } else {
-            throw new RuntimeException("不支持的文件类型");
+        FileParser parser = PARSER_MAP.get(fileType);
+
+        if (parser == null) {
+            throw new UnsupportedOperationException("不支持的文件类型: " + fileType);
         }
+
         return parser.split2Chunks(file, 1000, fileType);
     }
 
