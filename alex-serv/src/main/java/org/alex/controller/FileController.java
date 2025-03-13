@@ -28,8 +28,6 @@ public class FileController {
     @Autowired
     private AlexServService alexServService;
 
-    @Autowired
-
     @RequestMapping("upload")
     public String uploadFileAndSaveToMilvus(@RequestPart("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
