@@ -10,6 +10,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>alex-rag</artifactId>
+    <name>检索增强模块</name>
+    <description>负责文件的上传保存，对问题的检索增强以及回答等功能，是一个中心调度模块</description>
+    <version>1.0-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -21,22 +24,22 @@
         <dependency>
             <groupId>org.alex</groupId>
             <artifactId>alex-common</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alex</groupId>
             <artifactId>alex-vector-database</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alex</groupId>
             <artifactId>alex-file-process</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alex</groupId>
             <artifactId>alex-serv</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

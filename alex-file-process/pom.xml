@@ -10,6 +10,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>alex-file-process</artifactId>
+    <name>文件处理模块</name>
+    <description>负责文件的解析、分块等功能</description>
+    <version>1.0-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -21,7 +24,7 @@
         <dependency>
             <groupId>org.alex</groupId>
             <artifactId>alex-common</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
