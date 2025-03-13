@@ -142,8 +142,6 @@ public class RagServiceImpl implements RagService {
         String systemPrompt = "你需要根据提供的上下文准确回答用户的问题。";
         PromptTemplate promptTemplate1 = new PromptTemplate(PromptTemplateConstants.PROMPT_RAG);
         Prompt userPrompt = promptTemplate1.create(Map.of("query", question, "context", context));
-        //String userPrompt = "问题: " + question + "\n上下文: " + context;
-        //Prompt prompt = new Prompt(new SystemMessage(systemPrompt), new UserMessage(userPrompt));
         // 步骤 6: 自然语言生成, 获取模型生成的答案
         ChatResponse response = ChatClient.create(deepSeekClient)
             .prompt(userPrompt)
