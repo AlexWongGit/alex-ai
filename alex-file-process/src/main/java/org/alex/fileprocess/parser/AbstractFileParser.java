@@ -71,7 +71,7 @@ public abstract class AbstractFileParser implements FileParser {
      * @return boolean
      * @param file 文件
      */
-    public boolean isOOXML(File file) {
+    protected boolean isOOXML(File file) {
         try (FileInputStream fis = new FileInputStream(file)) {
             // OOXML 文件都是 ZIP 格式（例如 .docx, .xlsx, .pptx）
             return isZipFormat(fis);
@@ -86,7 +86,7 @@ public abstract class AbstractFileParser implements FileParser {
      * @return boolean
      * @param inputStream 输入流
      */
-    public boolean isZipFormat(InputStream inputStream) throws IOException {
+    protected boolean isZipFormat(InputStream inputStream) throws IOException {
         byte[] signature = new byte[4];
         inputStream.read(signature);
         return (signature[0] == 'P' && signature[1] == 'K' && signature[2] == 3 && signature[3] == 4);
