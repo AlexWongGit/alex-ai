@@ -68,6 +68,7 @@ public class ExcelParser extends AbstractFileParser {
                 }
             } else {
                 Map<String, String> rowData = new HashMap<>();
+                // 遍历每一行单元格
                 for (int i = 0; i < headers.size(); i++) {
                     String cellValue = getCellValue(row.getCell(i));
                     if (cellValue.isEmpty()) {

@@ -4,6 +4,8 @@ import org.alex.common.enums.FileTypeEnum;
 import org.alex.fileprocess.parser.*;
 import org.alex.fileprocess.service.FileService;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
@@ -15,34 +17,31 @@ import java.util.*;
 @Service
 public class FileServiceImpl implements FileService {
 
-    private static final Map<FileTypeEnum, FileParser> PARSER_MAP = new EnumMap<>(FileTypeEnum.class);
+    private static final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
+    private static final Map<FileTypeEnum, FileParser> PARSER_MAP = initializeParserMap();
 
-    static {
-        PARSER_MAP.put(FileTypeEnum.PDF, new PDFParser());
-        PARSER_MAP.put(FileTypeEnum.DOC, new DOCParser());
-        PARSER_MAP.put(FileTypeEnum.DOCX, new DOCParser());
-        PARSER_MAP.put(FileTypeEnum.XLS, new ExcelParser());
-        PARSER_MAP.put(FileTypeEnum.XLSX, new ExcelParser());
-        PARSER_MAP.put(FileTypeEnum.PPT, new PPTParser());
-        PARSER_MAP.put(FileTypeEnum.PPTX, new PPTParser());
-        PARSER_MAP.put(FileTypeEnum.TXT, new TXTParser());
-        PARSER_MAP.put(FileTypeEnum.MD, new MDParser());
-        PARSER_MAP.put(FileTypeEnum.CSV, new CSVParser());
-        PARSER_MAP.put(FileTypeEnum.XML, new XMLParser());
+    private static Map<FileTypeEnum, FileParser> initializeParserMap() {
+        Map<FileTypeEnum, FileParser> parserMap = new EnumMap<>(FileTypeEnum.class);
+        parserMap.put(FileTypeEnum.PDF, new PDFParser());
+        parserMap.put(FileTypeEnum.DOC, new DOCParser());
+        parserMap.put(FileTypeEnum.DOCX, new DOCParser());
+        parserMap.put(FileTypeEnum.XLS, new ExcelParser());
+        parserMap.put(FileTypeEnum.XLSX, new ExcelParser());
+        parserMap.put(FileTypeEnum.PPT, new PPTParser());
+        parserMap.put(FileTypeEnum.PPTX, new PPTParser());
+        parserMap.put(FileTypeEnum.TXT, new TXTParser());
+        parserMap.put(FileTypeEnum.MD, new MDParser());
+        parserMap.put(FileTypeEnum.CSV, new CSVParser());
+        parserMap.put(FileTypeEnum.XML, new XMLParser());
+        return parserMap;
     }
 
     @Override
     public List<String> splitFile(File file, FileTypeEnum fileType) {
-        FileParser parser = PARSER_MAP.get(fileType);
-
-        if (parser == null) {
-            throw new UnsupportedOperationException("不支持的文件类型: " + fileType);
-        }
-        // 文件的识别
-        //
-        return parser.split2Chunks(file, 1000, fileType);
+        return Optional.ofNullable(PARSER_MAP.get(fileType))
+            .orElseThrow(() -> new UnsupportedOperationException("不支持的文件类型: " + fileType))
+            .split2Chunks(file, 1000, fileType);
     }
-
 
     @Override
     public Map<String, List<String>> batchSplitFiles(Map<String, File> fileMap) {
@@ -53,11 +52,9 @@ public class FileServiceImpl implements FileService {
                 File file = entry.getValue();
                 List<String> splitFiles = splitFile(file, FileTypeEnum.getFileType(fileName));
                 ret.put(fileName, splitFiles);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 ret.put(entry.getKey(), null);
-                e.printStackTrace();
+                logger.error("Error processing file: " + entry.getKey(), e);
             }
         }
         return ret;

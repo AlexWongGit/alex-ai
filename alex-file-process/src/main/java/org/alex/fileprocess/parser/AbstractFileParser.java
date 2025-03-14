@@ -66,6 +66,11 @@ public abstract class AbstractFileParser implements FileParser {
         return chunks;
     }
 
+    /**
+     * @description 判断文件是否为 OOXML 格式
+     * @return boolean
+     * @param file 文件
+     */
     public boolean isOOXML(File file) {
         try (FileInputStream fis = new FileInputStream(file)) {
             // OOXML 文件都是 ZIP 格式（例如 .docx, .xlsx, .pptx）
@@ -76,6 +81,11 @@ public abstract class AbstractFileParser implements FileParser {
         return false;
     }
 
+    /**
+     * @description 判断输入流是否为 ZIP 格式
+     * @return boolean
+     * @param inputStream 输入流
+     */
     public boolean isZipFormat(InputStream inputStream) throws IOException {
         byte[] signature = new byte[4];
         inputStream.read(signature);
