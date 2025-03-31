@@ -1,11 +1,14 @@
 package org.alex.fileprocess.service.impl;
 
+import org.alex.common.bean.entity.file.RAGFile;
 import org.alex.common.enums.FileTypeEnum;
+import org.alex.common.utils.MinioUtil;
 import org.alex.fileprocess.parser.*;
-import org.alex.fileprocess.service.FileService;
+import org.alex.fileprocess.service.FileProcessService;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.*;
@@ -15,9 +18,9 @@ import java.util.*;
  * @Date 2025/2/27
  */
 @Service
-public class FileServiceImpl implements FileService {
+public class FileProcessServiceImpl implements FileProcessService {
 
-    private static final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(FileProcessServiceImpl.class);
     private static final Map<FileTypeEnum, FileParser> PARSER_MAP = initializeParserMap();
 
     private static Map<FileTypeEnum, FileParser> initializeParserMap() {

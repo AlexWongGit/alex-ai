@@ -1,8 +1,6 @@
 package org.alex.controller;
 
-import lombok.extern.slf4j.Slf4j;
 import org.alex.common.utils.FileUtil;
-import org.alex.fileprocess.service.FileService;
 import org.alex.service.AlexServService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;

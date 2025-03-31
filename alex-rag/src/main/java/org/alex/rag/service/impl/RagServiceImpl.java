@@ -3,10 +3,11 @@ package org.alex.rag.service.impl;
 import jakarta.annotation.Resource;
 import org.alex.common.enums.FileTypeEnum;
 import org.alex.common.utils.FileUtil;
-import org.alex.fileprocess.service.FileService;
+import org.alex.fileprocess.service.FileProcessService;
 import org.alex.common.bean.dto.ArchiveDto;
 import org.alex.rag.module.memory.HistoryChatMemory;
 import org.alex.rag.module.prompt.PromptTemplateConstants;
+import org.alex.rag.service.RagFileService;
 import org.alex.rag.service.RagService;
 import org.alex.vec.service.MilvusService;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author wangzf
@@ -48,7 +50,10 @@ public class RagServiceImpl implements RagService {
     private MilvusService milvusService;
 
     @Resource
-    private FileService fileService;
+    private FileProcessService fileProcessService;
+
+    @Resource
+    private RagFileService ragFileService;
 
     @Resource
     private HistoryChatMemory chatMemory;
@@ -58,11 +63,10 @@ public class RagServiceImpl implements RagService {
         File tempFile = FileUtil.convert(file);
         try {
             // 使用转换后的 File 对象进行后续操作
-            List<String> textArray = fileService.splitFile(tempFile, FileTypeEnum.getFileType(file.getOriginalFilename()));
-            log.info("转换后的文件路径: {}" + tempFile.getAbsolutePath());
-            for (String s : textArray) {
-                save2Milvus(file.getOriginalFilename(), s);
-            }
+            CompletableFuture<Void> durationTask =
+                CompletableFuture.runAsync(() -> ragFileService.durationFile(file, FileTypeEnum.getFileType(file.getOriginalFilename())));
+            CompletableFuture<Void> vectorTask = CompletableFuture.runAsync(() -> storageVector(file, tempFile));
+            CompletableFuture.allOf(durationTask, vectorTask).join();
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -71,6 +75,14 @@ public class RagServiceImpl implements RagService {
             tempFile.delete();
         }
         return true;
+    }
+
+    private void storageVector(MultipartFile file, File tempFile) {
+        List<String> textArray = fileProcessService.splitFile(tempFile, FileTypeEnum.getFileType(file.getOriginalFilename()));
+        log.info("转换后的文件路径: {}" + tempFile.getAbsolutePath());
+        for (String s : textArray) {
+            save2Milvus(file.getOriginalFilename(), s);
+        }
     }
 
     private boolean save2Milvus(String fileName, String s) {
@@ -88,7 +100,7 @@ public class RagServiceImpl implements RagService {
     public Map<String, Boolean> batchUploadFileAndSaveToMilvus(Map<String, File> files) {
         Map<String, Boolean> ret = new HashMap<>(1);
 
-        Map<String, List<String>> map = fileService.batchSplitFiles(files);
+        Map<String, List<String>> map = fileProcessService.batchSplitFiles(files);
         for (Map.Entry<String, List<String>> entry : map.entrySet()) {
             String fileName = entry.getKey();
             List<String> textArray = entry.getValue();

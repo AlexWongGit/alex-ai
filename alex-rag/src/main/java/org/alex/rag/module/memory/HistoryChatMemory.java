@@ -4,7 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.alex.common.bean.entity.history.RagHistoryMessage;
-import org.alex.rag.service.HistoryMessageService;
+import org.alex.rag.service.RagHistoryMessageService;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class HistoryChatMemory implements ChatMemory {
 
     @Autowired
-    private HistoryMessageService historyMessageService;
+    private RagHistoryMessageService ragHistoryMessageService;
 
     public static Message toMessage(RagHistoryMessage aiMessage) {
         if (aiMessage.getMessageType().equals(MessageType.ASSISTANT)) {
@@ -99,7 +99,7 @@ public class HistoryChatMemory implements ChatMemory {
         }
         List<RagHistoryMessage> aiMessages = messages.stream().map(message -> toHistoryMessage(message, conversationId)).flatMap(List::stream).toList();
 
-        historyMessageService.saveBatch(aiMessages);
+        ragHistoryMessageService.saveBatch(aiMessages);
     }
 
     @Override
@@ -111,7 +111,7 @@ public class HistoryChatMemory implements ChatMemory {
             .orderByDesc("ask_time")
             .last("LIMIT 10");
 
-        List<RagHistoryMessage> uniqueMessages = historyMessageService.list(qw);
+        List<RagHistoryMessage> uniqueMessages = ragHistoryMessageService.list(qw);
         if (CollUtil.isEmpty(uniqueMessages)) {
             return new ArrayList<>();
         }
@@ -124,7 +124,7 @@ public class HistoryChatMemory implements ChatMemory {
         fullQw.in("message_id", messageIds)
             .orderByAsc("message_order");
 
-        List<RagHistoryMessage> allMessages = historyMessageService.list(fullQw);
+        List<RagHistoryMessage> allMessages = ragHistoryMessageService.list(fullQw);
 
         // 按 messageId 进行分组，并拼接 text 字段
         Map<String, String> mergedTexts = allMessages.stream()
@@ -148,6 +148,6 @@ public class HistoryChatMemory implements ChatMemory {
 
     @Override
     public void clear(String conversationId) {
-        historyMessageService.remove(new LambdaQueryWrapper<RagHistoryMessage>().eq(RagHistoryMessage::getConversationId, conversationId));
+        ragHistoryMessageService.remove(new LambdaQueryWrapper<RagHistoryMessage>().eq(RagHistoryMessage::getConversationId, conversationId));
     }
 }

@@ -9,5 +9,5 @@ import org.alex.common.bean.entity.history.RagHistoryMessage;
  * @Author wangzf
  * @Date 2025/3/10
  */
-public interface HistoryMessageMapper extends BaseMapper<RagHistoryMessage> {
+public interface RagHistoryMessageMapper extends BaseMapper<RagHistoryMessage> {
 }

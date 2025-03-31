@@ -8,5 +8,5 @@ import org.alex.common.bean.entity.history.RagHistoryMessage;
  * @Author wangzf
  * @Date 2025/3/10
  */
-public interface HistoryMessageService extends IService<RagHistoryMessage> {
+public interface RagHistoryMessageService extends IService<RagHistoryMessage> {
 }
