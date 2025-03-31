@@ -12,7 +12,6 @@
     <artifactId>alex-api</artifactId>
     <name>开放api模块</name>
     <description>一些对外接口</description>
-    <version>${project.parent.version}</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

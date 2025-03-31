@@ -12,7 +12,6 @@
     <artifactId>alex-rag</artifactId>
     <name>检索增强模块</name>
     <description>rag中心调度模块</description>
-    <version>${project.parent.version}</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

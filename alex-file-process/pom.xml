@@ -12,7 +12,6 @@
     <artifactId>alex-file-process</artifactId>
     <name>文件处理模块</name>
     <description>负责文件的解析、分块等功能</description>
-    <version>${project.parent.version}</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
