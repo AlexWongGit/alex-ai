@@ -73,8 +73,21 @@ public class OllamaConfig {
                 ModelManagementOptions.defaults());
     }
 
-    @Bean
-    public OllamaEmbeddingModel ollamaClient() {
+    @Bean(name = "nomicEmbeddingClient")
+    @Primary
+    public OllamaEmbeddingModel nomicEmbeddingClient() {
+        var ollamaApi = new OllamaApi(baseUrl);
+        return new OllamaEmbeddingModel(ollamaApi,
+                OllamaOptions.builder()
+                        .model(OllamaModel.NOMIC_EMBED_TEXT)
+                        .build(),
+                ObservationRegistry.NOOP,
+                ModelManagementOptions.defaults()
+                );
+    }
+
+    @Bean(name = "bgeM3EmbeddingClient")
+    public OllamaEmbeddingModel bgeM3EmbeddingClient() {
         var ollamaApi = new OllamaApi(baseUrl);
         return new OllamaEmbeddingModel(ollamaApi,
                 OllamaOptions.builder()

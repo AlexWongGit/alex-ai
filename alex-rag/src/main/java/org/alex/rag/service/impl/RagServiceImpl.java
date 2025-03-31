@@ -1,6 +1,5 @@
 package org.alex.rag.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.alex.common.enums.FileTypeEnum;
 import org.alex.common.utils.FileUtil;
@@ -35,10 +34,10 @@ import java.util.*;
 public class RagServiceImpl implements RagService {
 
     @Resource
-    private OllamaEmbeddingModel embeddingModel;
+    @Qualifier("bgeM3EmbeddingClient")
+    private OllamaEmbeddingModel ollamaEmbeddingModel;
 
     @Resource
-    @Qualifier("deepSeekClient")
     private OllamaChatModel deepSeekClient;
 
     @Resource
@@ -77,7 +76,7 @@ public class RagServiceImpl implements RagService {
     private boolean save2Milvus(String fileName, String s) {
         ArchiveDto archive = new ArchiveDto();
         // 生成嵌入向量
-        float[] embedding = embeddingModel.embed(s);
+        float[] embedding = ollamaEmbeddingModel.embed(s);
         archive.setFileName(fileName);
         archive.setArcsoftFeature(embedding);
         archive.setOrgId(1);
@@ -124,7 +123,7 @@ public class RagServiceImpl implements RagService {
         log.info("关键词：{}", keyword);
 
         // 步骤 2: 生成关键字的嵌入向量
-        float[] embedding = embeddingModel.embed(keyword);
+        float[] embedding = ollamaEmbeddingModel.embed(keyword);
 
         // 步骤 3: 数据检索阶段, 在 Milvus 中搜索最相似的文档
         String searchResult = milvusService.searchSimilarity(embedding, null, keyword);

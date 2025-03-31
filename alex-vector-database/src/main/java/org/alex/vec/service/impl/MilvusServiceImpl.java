@@ -45,14 +45,16 @@ public class MilvusServiceImpl implements MilvusService {
 
     private final MilvusClientV2 client;
 
-    private final VectorStore vectorStore;
+    //private final VectorStore vectorStore;
 
 
     private final Gson gson = new Gson();
 
-    public MilvusServiceImpl(MilvusClientV2 client,VectorStore vectorStore) {
+    public MilvusServiceImpl(MilvusClientV2 client
+        //,VectorStore vectorStore
+    ) {
         this.client = client;
-        this.vectorStore = vectorStore;
+        //this.vectorStore = vectorStore;
     }
 
     @Override
@@ -313,7 +315,7 @@ public class MilvusServiceImpl implements MilvusService {
         return null;
     }
 
-    @Override
+/*    @Override
     public List<Document> searchSimilarity(String question) {
         return vectorStore.similaritySearch(question);
     }
@@ -331,5 +333,5 @@ public class MilvusServiceImpl implements MilvusService {
     @Override
     public void delete(List<String> ids) {
         vectorStore.delete(ids);
-    }
+    }*/
 }

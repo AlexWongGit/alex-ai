@@ -39,10 +39,10 @@ public interface MilvusService {
 
     /**-------------------spring ai milvus 的api---------------------**/
 
-    List<Document> searchSimilarity(String question);
+/*    List<Document> searchSimilarity(String question);
     List<Document> searchSimilarity(SearchRequest request);
 
     void add(List<Document> documents);
 
-    void delete(List<String> ids);
+    void delete(List<String> ids);*/
 }
