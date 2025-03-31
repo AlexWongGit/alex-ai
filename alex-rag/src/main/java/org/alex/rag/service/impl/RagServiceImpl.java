@@ -21,6 +21,7 @@ import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Flux;
 
 import java.io.File;
 import java.io.IOException;
@@ -98,7 +99,7 @@ public class RagServiceImpl implements RagService {
 
 
     @Override
-    public String performRag(String question) {
+    public Flux<ChatResponse> performRag(String question) {
 
         // 步骤 1: 使用大模型提取关键词生成向量
         PromptTemplate promptTemplate = new PromptTemplate(PromptTemplateConstants.GET_KEYWORDS_TEMPLATE);
@@ -124,15 +125,12 @@ public class RagServiceImpl implements RagService {
         PromptTemplate promptTemplate1 = new PromptTemplate(PromptTemplateConstants.PROMPT_RAG);
         Prompt userPrompt = promptTemplate1.create(Map.of("query", question, "context", context));
         // 步骤 6: 自然语言生成, 获取模型生成的答案
-        ChatResponse response = ChatClient.create(deepSeekClient)
-            .prompt(userPrompt)
-            .system(systemPrompt)
+        return ChatClient.create(deepSeekClient).prompt(userPrompt).system(systemPrompt)
             //.tools(functionBeanNames)
             // 历史问答
             .advisors(advisorSpec -> fillHistory(advisorSpec, "12345"))
-            .call()
+            .stream()
             .chatResponse();
-        return response.getResult().toString();
     }
 
     public void fillHistory(ChatClient.AdvisorSpec advisorSpec, String sessionId) {

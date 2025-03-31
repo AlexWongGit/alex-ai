@@ -2,10 +2,12 @@ package org.alex.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.alex.rag.service.RagService;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 
 /**
  * @Description: RAG控制类
@@ -21,7 +23,7 @@ public class RAGController {
 
 
     @RequestMapping("ask")
-    public String searchTallestSimilarity(@RequestParam("question") String question) {
+    public Flux<ChatResponse> searchTallestSimilarity(@RequestParam("question") String question) {
         return ragService.performRag(question);
     }
 
