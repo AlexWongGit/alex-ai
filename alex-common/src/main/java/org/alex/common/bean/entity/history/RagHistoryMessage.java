@@ -14,8 +14,8 @@ import java.util.Date;
  * @Author wangzf
  * @Date 2025/3/10
  */
-@TableName("history_message")
-public class HistoryMessage {
+@TableName("rag_history_message")
+public class RagHistoryMessage {
 
     @TableId(type = IdType.ASSIGN_ID)
     @TableField("id")

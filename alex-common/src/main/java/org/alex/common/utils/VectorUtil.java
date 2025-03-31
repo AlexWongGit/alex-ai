@@ -9,8 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * TODO <br>
- *
+ * @Description: 向量工具类
  * @Author wangzf
  * @Date 2025/2/27
  */
