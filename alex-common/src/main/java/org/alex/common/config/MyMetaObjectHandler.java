@@ -4,7 +4,6 @@ package org.alex.common.config;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.stereotype.Component;
 
@@ -20,32 +19,20 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class MyMetaObjectHandler implements MetaObjectHandler {
 
+    public static final String DEFAULT_NAME = "system";
+
     @Override
     public void insertFill(MetaObject metaObject) {
-        String userName = null;
-        String realname = null;
-
-        this.strictInsertFill(metaObject, "createBy", String.class, userName == null ? "system" : userName);
+        this.strictInsertFill(metaObject, "createUser", String.class, DEFAULT_NAME);
         this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());
-        this.strictInsertFill(metaObject, "updateBy", String.class, userName == null ? "system" : userName);
+        this.strictInsertFill(metaObject, "updateUser", String.class, DEFAULT_NAME);
         this.strictInsertFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
-        if (StringUtils.isNotBlank(metaObject.findProperty("createName", true))) {
-            this.strictInsertFill(metaObject, "createName", String.class, realname == null ? "system" : realname);
-        }
-        if (StringUtils.isNotBlank(metaObject.findProperty("updateName", true))) {
-            this.strictInsertFill(metaObject, "updateName", String.class, realname == null ? "system" : realname);
-        }
     }
 
     @Override
     public void updateFill(MetaObject metaObject) {
-        String userName = null;
-        String realname = null;
-        this.strictUpdateFill(metaObject, "updateBy", String.class, userName == null ? "system" : userName);
+        this.strictUpdateFill(metaObject, "updateUser", String.class, DEFAULT_NAME);
         this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
-        if (StringUtils.isNotBlank(metaObject.findProperty("updateName", true))) {
-            this.strictUpdateFill(metaObject, "updateName", String.class, realname == null ? "system" : realname);
-        }
     }
 }
 
