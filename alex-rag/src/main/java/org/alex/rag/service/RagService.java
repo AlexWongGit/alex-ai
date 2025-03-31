@@ -19,4 +19,5 @@ public interface RagService {
 
     Boolean uploadFileAndSaveToMilvus(MultipartFile file) throws IOException;
 
+    Flux<ChatResponse> multi(String question, MultipartFile file);
 }

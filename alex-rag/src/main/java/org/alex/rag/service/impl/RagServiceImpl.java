@@ -3,6 +3,7 @@ package org.alex.rag.service.impl;
 import jakarta.annotation.Resource;
 import org.alex.common.enums.FileTypeEnum;
 import org.alex.common.utils.FileUtil;
+import org.alex.common.utils.MinioUtil;
 import org.alex.fileprocess.service.FileProcessService;
 import org.alex.common.bean.dto.ArchiveDto;
 import org.alex.rag.module.memory.HistoryChatMemory;
@@ -13,18 +14,24 @@ import org.alex.vec.service.MilvusService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.model.Media;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -58,6 +65,9 @@ public class RagServiceImpl implements RagService {
 
     @Resource
     private HistoryChatMemory chatMemory;
+
+    @Resource
+    private MinioUtil minioUtil;
 
     @Override
     public Boolean uploadFileAndSaveToMilvus(MultipartFile file) throws IOException {
@@ -157,4 +167,23 @@ public class RagServiceImpl implements RagService {
         return input.substring(startIndex, endIndex).trim();
     }
 
+    @Override
+    public Flux<ChatResponse> multi(String question, MultipartFile file) {
+        String systemPrompt = "你需要根据图片准确回答用户的问题。";
+
+        try {
+            UserMessage userMessage = new UserMessage(question, List.of(new Media(MimeTypeUtils.IMAGE_JPEG, new URL(minioUtil.uploadFile(file)))));
+            return ChatClient.create(deepSeekClient)
+                .prompt(new Prompt(userMessage))
+                .system(systemPrompt)
+                //.tools(functionBeanNames)
+                // 历史问答
+                .advisors(advisorSpec -> fillHistory(advisorSpec, "12345"))
+                .stream()
+                .chatResponse();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 }
