@@ -6,6 +6,7 @@ import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +20,7 @@ import java.util.UUID;
  */
 @Component
 @RequiredArgsConstructor
+@RefreshScope
 public class MinioUtil {
 
     private final MinioClient minioClient;

@@ -9,6 +9,7 @@ import org.springframework.ai.ollama.api.OllamaModel;
 import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.ai.ollama.management.ModelManagementOptions;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -19,6 +20,7 @@ import org.springframework.context.annotation.Primary;
  * @Date 2025/2/10
  */
 @Configuration
+@RefreshScope
 public class OllamaConfig {
 
     @Value("${spring.ai.ollama.base-url}")
