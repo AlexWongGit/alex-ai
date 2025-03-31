@@ -96,30 +96,6 @@ public class RagServiceImpl implements RagService {
         return milvusService.insert(Collections.singletonList(archive));
     }
 
-    @Override
-    public Map<String, Boolean> batchUploadFileAndSaveToMilvus(Map<String, File> files) {
-        Map<String, Boolean> ret = new HashMap<>(1);
-
-        Map<String, List<String>> map = fileProcessService.batchSplitFiles(files);
-        for (Map.Entry<String, List<String>> entry : map.entrySet()) {
-            String fileName = entry.getKey();
-            List<String> textArray = entry.getValue();
-            if (textArray == null) {
-                ret.put(fileName, false);
-                continue;
-            }
-            for (String s : textArray) {
-                try {
-                    ret.put(fileName, save2Milvus(fileName, s));
-                } catch (Exception e) {
-                    ret.put(fileName, false);
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return ret;
-    }
 
     @Override
     public String performRag(String question) {

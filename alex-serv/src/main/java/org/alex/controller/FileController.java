@@ -37,13 +37,13 @@ public class FileController {
 
     @RequestMapping("batchUpload")
     public Map<String, Boolean> batchUploadFilesAndSaveToMilvus(@RequestPart("files") MultipartFile[] files) {
-        Map<String, File> fileMap = new HashMap<>();
+        Map<String, MultipartFile> fileMap = new HashMap<>();
         List<File> tempFiles = new CopyOnWriteArrayList<>();
         try {
             for (int i = 0; i < files.length; i++) {
                 try {
                     File tempFile = FileUtil.convert(files[i]);
-                    fileMap.put(files[i].getOriginalFilename(), tempFile);
+                    fileMap.put(files[i].getOriginalFilename(), files[i]);
                     tempFiles.add(tempFile);
                 } catch (IOException e) {
                     e.printStackTrace();

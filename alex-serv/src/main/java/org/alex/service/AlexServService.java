@@ -2,7 +2,6 @@ package org.alex.service;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -27,5 +26,5 @@ public interface AlexServService {
      * @param files 文件
      * @return Map<String, Boolean>
      */
-    Map<String, Boolean> batchUploadFileAndSaveToMilvus(Map<String, File> files);
+    Map<String, Boolean> batchUploadFileAndSaveToMilvus(Map<String, MultipartFile> files);
 }

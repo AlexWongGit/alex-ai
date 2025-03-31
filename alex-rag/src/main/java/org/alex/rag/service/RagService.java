@@ -17,6 +17,4 @@ public interface RagService {
 
     Boolean uploadFileAndSaveToMilvus(MultipartFile file) throws IOException;
 
-
-    Map<String, Boolean> batchUploadFileAndSaveToMilvus(Map<String, File> files);
 }
