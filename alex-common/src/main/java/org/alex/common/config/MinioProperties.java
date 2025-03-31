@@ -5,7 +5,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * TODO <br>
  *
  * @Author wangzf
  * @Date 2025/3/31

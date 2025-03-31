@@ -15,9 +15,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @MapperScan(basePackages = "org.alex.rag.mapper")
 @SpringBootApplication(scanBasePackages = {"org.alex"},exclude = {OllamaAutoConfiguration.class, MilvusVectorStoreAutoConfiguration.class})
-public class RAGApplication {
+public class RagApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(RAGApplication.class, args);
+        SpringApplication.run(RagApplication.class, args);
     }
 }
