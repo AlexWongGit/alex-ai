@@ -8,7 +8,8 @@ import org.alex.common.utils.MinioUtil;
 import org.alex.rag.mapper.RagFileMapper;
 import org.alex.rag.service.RagFileService;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
 
 /**
  * TODO <br>
@@ -22,17 +23,17 @@ public class RagFileServiceImpl extends ServiceImpl<RagFileMapper, RAGFile> impl
     private final MinioUtil minioUtil;
 
     @Override
-    public boolean durationFile(MultipartFile file, FileTypeEnum fileType) {
+    public boolean durationFile(File file, FileTypeEnum fileType, String fileName) {
         String fileUrl = null;
         try {
-            fileUrl = minioUtil.uploadFile(file);
+            fileUrl = minioUtil.uploadFile(file, fileName);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         RAGFile ragFile = new RAGFile();
         ragFile.setFileUrl(fileUrl);
         ragFile.setFileType(fileType.getType());
-        ragFile.setFileName(file.getOriginalFilename());
+        ragFile.setFileName(fileName);
         return this.save(ragFile);
     }
 }

@@ -3,7 +3,8 @@ package org.alex.rag.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.alex.common.bean.entity.file.RAGFile;
 import org.alex.common.enums.FileTypeEnum;
-import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
 
 /**
  *
@@ -12,5 +13,5 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface RagFileService extends IService<RAGFile> {
 
-    boolean durationFile(MultipartFile file, FileTypeEnum fileType);
+    boolean durationFile(File file, FileTypeEnum fileType,String fileName);
 }

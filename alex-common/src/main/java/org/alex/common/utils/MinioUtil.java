@@ -10,6 +10,8 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.UUID;
 
@@ -46,6 +48,22 @@ public class MinioUtil {
                     .build()
             );
             return getFileUrl(objectName);
+        } catch (Exception e) {
+            throw new RuntimeException("上传失败", e);
+        }
+    }
+
+    public String uploadFile(File file, String fileName) {
+        try (FileInputStream fileInputStream = new FileInputStream(file)){
+            minioClient.putObject(
+                PutObjectArgs.builder()
+                    .bucket(bucketName)
+                    .object(fileName)
+                    .stream(fileInputStream, file.length(), -1)
+                    .contentType("application/octet-stream")
+                    .build()
+            );
+            return getFileUrl(fileName);
         } catch (Exception e) {
             throw new RuntimeException("上传失败", e);
         }

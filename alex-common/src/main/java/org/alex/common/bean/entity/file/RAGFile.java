@@ -17,7 +17,7 @@ public class RAGFile extends BaseEntity {
     @TableField(value = "file_name")
     private String fileName;
 
-    @TableField(value = "file_id")
+    @TableField(value = "file_url")
     private String fileUrl;
 
     @TableField(value = "file_type")

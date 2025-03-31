@@ -64,7 +64,7 @@ public class RagServiceImpl implements RagService {
         try {
             // 使用转换后的 File 对象进行后续操作
             CompletableFuture<Void> durationTask =
-                CompletableFuture.runAsync(() -> ragFileService.durationFile(file, FileTypeEnum.getFileType(file.getOriginalFilename())));
+                CompletableFuture.runAsync(() -> ragFileService.durationFile(tempFile, FileTypeEnum.getFileType(file.getOriginalFilename()), file.getOriginalFilename()));
             CompletableFuture<Void> vectorTask = CompletableFuture.runAsync(() -> storageVector(file, tempFile));
             CompletableFuture.allOf(durationTask, vectorTask).join();
         } catch (Exception e) {
