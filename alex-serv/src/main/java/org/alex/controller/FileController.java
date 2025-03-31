@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
+ * @Description: 文件上传控制类
  * @Author wangzf
  * @Date 2025/3/13
  */

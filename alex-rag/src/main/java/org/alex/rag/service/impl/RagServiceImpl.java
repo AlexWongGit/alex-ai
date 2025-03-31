@@ -64,14 +64,7 @@ public class RagServiceImpl implements RagService {
             List<String> textArray = fileService.splitFile(tempFile, FileTypeEnum.getFileType(file.getOriginalFilename()));
             log.info("转换后的文件路径: {}" + tempFile.getAbsolutePath());
             for (String s : textArray) {
-                ArchiveDto archive = new ArchiveDto();
-                // 生成嵌入向量
-                float[] embedding = embeddingModel.embed(s);
-                archive.setFileName(file.getOriginalFilename());
-                archive.setArcsoftFeature(embedding);
-                archive.setOrgId(1);
-                archive.setText(s);
-                milvusService.insert(Collections.singletonList(archive));
+                save2Milvus(file.getOriginalFilename(), s);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -81,6 +74,17 @@ public class RagServiceImpl implements RagService {
             tempFile.delete();
         }
         return true;
+    }
+
+    private boolean save2Milvus(String fileName, String s) {
+        ArchiveDto archive = new ArchiveDto();
+        // 生成嵌入向量
+        float[] embedding = embeddingModel.embed(s);
+        archive.setFileName(fileName);
+        archive.setArcsoftFeature(embedding);
+        archive.setOrgId(1);
+        archive.setText(s);
+        return milvusService.insert(Collections.singletonList(archive));
     }
 
     @Override
@@ -97,15 +101,7 @@ public class RagServiceImpl implements RagService {
             }
             for (String s : textArray) {
                 try {
-                    ArchiveDto archive = new ArchiveDto();
-                    // 生成嵌入向量
-                    float[] embedding = embeddingModel.embed(s);
-                    archive.setFileName(fileName);
-                    archive.setArcsoftFeature(embedding);
-                    archive.setOrgId(1);
-                    archive.setText(s);
-                    Boolean insert = milvusService.insert(Collections.singletonList(archive));
-                    ret.put(fileName, insert);
+                    ret.put(fileName, save2Milvus(fileName, s));
                 } catch (Exception e) {
                     ret.put(fileName, false);
                     e.printStackTrace();

@@ -8,8 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * TODO <br>
- *
+ * @Description: RAG控制类
  * @Author wangzf
  * @Date 2025/2/27
  */
