@@ -12,7 +12,7 @@
     <artifactId>alex-common</artifactId>
     <name>基础模块</name>
     <description>公共基础模块</description>
-    <version>${parent.version}</version>
+    <version>${project.parent.version}</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

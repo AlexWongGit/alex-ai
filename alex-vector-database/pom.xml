@@ -12,7 +12,7 @@
     <artifactId>alex-vector-database</artifactId>
     <name>向量数据库模块</name>
     <description>包含封装后的向量数据库相关的功能</description>
-    <version>${parent.version}</version>
+    <version>${project.parent.version}</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
