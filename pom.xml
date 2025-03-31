@@ -12,6 +12,7 @@
         <module>alex-rag</module>
         <module>alex-serv</module>
         <module>alex-app</module>
+        <module>alex-api</module>
     </modules>
     <packaging>pom</packaging>
 

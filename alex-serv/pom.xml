@@ -12,7 +12,7 @@
     <artifactId>alex-serv</artifactId>
     <name>业务模块</name>
     <description>业务相关的处理都经过这里，包含项目中所有的controller</description>
-    <version>1.0-SNAPSHOT</version>
+    <version>${parent.version}</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
