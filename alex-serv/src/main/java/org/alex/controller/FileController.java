@@ -34,7 +34,7 @@ public class FileController {
         if (file.isEmpty()) {
             throw new RuntimeException("文件为空");
         }
-        return alexServService.uploadFileAndSaveToMilvus(file) ? "上传成功" : "上传失败";
+        return Boolean.TRUE.equals(alexServService.uploadFileAndSaveToMilvus(file)) ? "上传成功" : "上传失败";
     }
 
     @RequestMapping("batchUpload")

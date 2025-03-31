@@ -54,8 +54,6 @@ public class RagServiceImpl implements RagService {
     @Resource
     private HistoryChatMemory chatMemory;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     @Override
     public Boolean uploadFileAndSaveToMilvus(MultipartFile file) throws IOException {
         File tempFile = FileUtil.convert(file);
