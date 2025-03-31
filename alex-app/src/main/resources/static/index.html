@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>大模型对话页面</title>
+    <style>
+        /* 整体背景采用绿色渐变 */
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #534832, #806641);
+            color: #000000;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        /* 聊天区域 */
+        #chatArea {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #9BC0CC;
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(51, 41, 41, 0.1);
+        }
+        /* 输入区域 */
+        #inputArea {
+            padding: 10px 20px;
+            background: #9bc0cc;
+            display: flex;
+            align-items: center;
+        }
+        #questionInput {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #8bc34a;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            margin-left: 10px;
+            padding: 10px 15px;
+            background: #8bc34a;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #7cb342;
+        }
+        #fileInput {
+            display: none;
+        }
+        .upload-label {
+            margin-left: 10px;
+            padding: 10px 15px;
+            background: #8bc34a;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .upload-label:hover {
+            background: #7cb342;
+        }
+        /* 对话内容样式 */
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            max-width: 80%;
+        }
+        .message.user {
+            background: #d0f0c0;
+            align-self: flex-end;
+        }
+        .message.bot {
+            background: #f0fff0;
+            align-self: flex-start;
+        }
+    </style>
+</head>
+<body>
+<div id="chatArea"></div>
+<div id="inputArea">
+    <input type="text" id="questionInput" placeholder="请输入您的问题..." />
+    <button id="sendButton">发送</button>
+    <label for="fileInput" class="upload-label">上传文件</label>
+    <input type="file" id="fileInput" />
+</div>
+
+<script>
+    const chatArea = document.getElementById("chatArea");
+    const questionInput = document.getElementById("questionInput");
+    const sendButton = document.getElementById("sendButton");
+    const fileInput = document.getElementById("fileInput");
+
+    // 发送消息，调用 GET 接口
+    sendButton.addEventListener("click", () => {
+        const question = questionInput.value.trim();
+        if (!question) return;
+
+        // 在聊天区域添加用户消息
+        appendMessage("user", question);
+
+        // 清空输入框
+        questionInput.value = "";
+
+        // 调用大模型问答接口：GET 请求
+        fetch(`http://localhost:6019/rag/ask?question=${encodeURIComponent(question)}`)
+            .then(response => response.json())
+            .then(data => {
+                // 假设返回数据中有 answer 字段
+                appendMessage("bot", data.answer || "无回答");
+            })
+            .catch(err => {
+                console.error(err);
+                appendMessage("bot", "请求出错");
+            });
+    });
+
+    // 上传文件，调用 POST 接口
+    fileInput.addEventListener("change", () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        fetch("http://localhost:6019/file/batchUpload", {
+            method: "POST",
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                // 显示上传结果
+                appendMessage("bot", "文件上传成功：" + JSON.stringify(data));
+            })
+            .catch(err => {
+                console.error(err);
+                appendMessage("bot", "文件上传失败");
+            });
+
+        // 清空 file input
+        fileInput.value = "";
+    });
+
+    // 添加消息到聊天区域
+    function appendMessage(sender, text) {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "message " + sender;
+        messageDiv.textContent = text;
+        chatArea.appendChild(messageDiv);
+        // 自动滚动到底部
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
+</script>
+</body>
+</html>

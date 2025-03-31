@@ -21,11 +21,8 @@ public enum FileTypeEnum {
     TXT("txt"),
     CSV("csv"),
     MD("md"),
-    HTML("html"),
-    JSON("json"),
-    YAML("yaml"),
     XML("xml"),
-    SQL("sql");
+    JSON("json");
     private final String type;
 
     FileTypeEnum(String type) {

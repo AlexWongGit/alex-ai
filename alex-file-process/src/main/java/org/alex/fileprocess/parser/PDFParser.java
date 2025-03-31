@@ -2,7 +2,10 @@ package org.alex.fileprocess.parser;
 
 import org.alex.common.enums.FileTypeEnum;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
+
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,6 +33,13 @@ public class PDFParser extends AbstractFileParser {
             // 预处理文本，去除无用字符
             text = cleanText(text);
 
+            PDFRenderer renderer = new PDFRenderer(document);
+            int pageCount = document.getNumberOfPages();
+            List<BufferedImage> images = new ArrayList<>();
+
+            for (int i = 0; i < pageCount; i++) {
+                
+            }
             // 分块处理
             chunks.addAll(splitText(text, maxChunkSize));
 
