@@ -1,6 +1,7 @@
 package org.alex.rag.model.config;
 
 import io.micrometer.observation.ObservationRegistry;
+import lombok.RequiredArgsConstructor;
 import org.springframework.ai.model.tool.ToolCallingManager;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
@@ -9,7 +10,6 @@ import org.springframework.ai.ollama.api.OllamaModel;
 import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.ai.ollama.management.ModelManagementOptions;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -20,26 +20,13 @@ import org.springframework.context.annotation.Primary;
  * @Date 2025/2/10
  */
 @Configuration
-@RefreshScope
+@RequiredArgsConstructor
 public class OllamaConfig {
 
     @Value("${spring.ai.ollama.base-url}")
     private String baseUrl;
 
-    @Value("${deepseek.model}")
-    private String deepSeekModelName;
-
-    @Value("${qwen.model}")
-    private String qwenModelName;
-
-    @Value("${deepseek.temperature}")
-    private Double deepSeekTemperature;
-
-    @Value("${qwen.temperature}")
-    private Double qwenTemperature;
-
-
-
+    private final ModelProperties modelProperties;
 
 
     @Bean(name = "deepSeekClient")
@@ -50,8 +37,8 @@ public class OllamaConfig {
 
         return new OllamaChatModel(ollamaApi,
                 OllamaOptions.builder()
-                        .model(deepSeekModelName)
-                        .temperature(deepSeekTemperature)
+                        .model(modelProperties.getDeepSeek())
+                        .temperature(modelProperties.getDeepSeekTemperature())
                         .build(),
                 ToolCallingManager.builder().build(),
                 ObservationRegistry.NOOP,
@@ -65,8 +52,8 @@ public class OllamaConfig {
 
         return new OllamaChatModel(ollamaApi,
                 OllamaOptions.builder()
-                        .model(qwenModelName)
-                        .temperature(qwenTemperature)
+                        .model(modelProperties.getQwen())
+                        .temperature(modelProperties.getQwenTemperature())
                         .build(),
                 ToolCallingManager.builder().build(),
                 ObservationRegistry.NOOP,
@@ -91,7 +78,7 @@ public class OllamaConfig {
         var ollamaApi = new OllamaApi(baseUrl);
         return new OllamaEmbeddingModel(ollamaApi,
                 OllamaOptions.builder()
-                        .model(OllamaModel.NOMIC_EMBED_TEXT)
+                        .model("bge-m3")
                         .build(),
                 ObservationRegistry.NOOP,
                 ModelManagementOptions.defaults()

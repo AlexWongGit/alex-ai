@@ -5,8 +5,7 @@ import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.alex.common.config.MinioProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,17 +21,11 @@ import java.util.UUID;
  */
 @Component
 @RequiredArgsConstructor
-@RefreshScope
 public class MinioUtil {
 
     private final MinioClient minioClient;
 
-    @Value("${minio.bucket-name}")
-    private String bucketName;
-
-    @Value("${minio.public-url}")
-    private String publicUrl;
-
+    private final MinioProperties minioProperties;
     /**
      * 上传文件
      */
@@ -41,7 +34,7 @@ public class MinioUtil {
             String objectName = UUID.randomUUID() + "_" + file.getOriginalFilename();
             minioClient.putObject(
                 PutObjectArgs.builder()
-                    .bucket(bucketName)
+                    .bucket(minioProperties.getBucketName())
                     .object(objectName)
                     .stream(file.getInputStream(), file.getSize(), -1)
                     .contentType(file.getContentType())
@@ -57,7 +50,7 @@ public class MinioUtil {
         try (FileInputStream fileInputStream = new FileInputStream(file)){
             minioClient.putObject(
                 PutObjectArgs.builder()
-                    .bucket(bucketName)
+                    .bucket(minioProperties.getBucketName())
                     .object(fileName)
                     .stream(fileInputStream, file.length(), -1)
                     .contentType("application/octet-stream")
@@ -76,7 +69,7 @@ public class MinioUtil {
         try {
             return minioClient.getObject(
                 GetObjectArgs.builder()
-                    .bucket(bucketName)
+                    .bucket(minioProperties.getBucketName())
                     .object(objectName)
                     .build()
             );
@@ -92,7 +85,7 @@ public class MinioUtil {
         try {
             minioClient.removeObject(
                 RemoveObjectArgs.builder()
-                    .bucket(bucketName)
+                    .bucket(minioProperties.getBucketName())
                     .object(objectName)
                     .build()
             );
@@ -105,6 +98,6 @@ public class MinioUtil {
      * 生成文件的访问 URL
      */
     public String getFileUrl(String objectName) {
-        return String.format("%s/%s/%s", publicUrl, bucketName, objectName);
+        return String.format("%s/%s/%s", minioProperties.getPublicUrl(), minioProperties.getBucketName(), objectName);
     }
 }

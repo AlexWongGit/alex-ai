@@ -1,7 +1,6 @@
 package org.alex.common.config;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -18,7 +17,6 @@ import java.util.concurrent.ThreadPoolExecutor;
  */
 @Configuration
 @EnableAsync
-@RefreshScope
 public class ThreadPoolConfig {
 
     @Value("${executor.queue-size:100}")

@@ -1,8 +1,7 @@
 package org.alex.common.config;
 
 import io.minio.MinioClient;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,22 +11,16 @@ import org.springframework.context.annotation.Configuration;
  * @Date 2025/3/31
  */
 @Configuration
-@RefreshScope
+@RequiredArgsConstructor
 public class MinioConfig {
-    @Value("${minio.endpoint}")
-    private String minioEndpoint;
 
-    @Value("${minio.access-key}")
-    private String minioAccessKey;
-
-    @Value("${minio.secret-key}")
-    private String minioSecretKey;
+    private final MinioProperties minioProperties;
 
     @Bean
     public MinioClient minioClient() {
         return MinioClient.builder()
-            .endpoint(minioEndpoint)
-            .credentials(minioAccessKey, minioSecretKey)
+            .endpoint(minioProperties.getEndpoint())
+            .credentials(minioProperties.getAccessKey(), minioProperties.getSecretKey())
             .build();
     }
 
