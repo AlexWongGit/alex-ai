@@ -22,6 +22,8 @@ import org.springframework.ai.model.Media;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
@@ -55,6 +57,10 @@ public class RagServiceImpl implements RagService {
     private OllamaChatModel qWenClient;
 
     @Resource
+    @Qualifier("visionClient")
+    private OllamaChatModel visionClient;
+
+    @Resource
     private MilvusService milvusService;
 
     @Resource
@@ -68,6 +74,9 @@ public class RagServiceImpl implements RagService {
 
     @Resource
     private MinioUtil minioUtil;
+
+    @Value("classpath:RAG.png")
+    private org.springframework.core.io.Resource img;
 
     @Override
     public Boolean uploadFileAndSaveToMilvus(MultipartFile file) throws IOException {
@@ -170,20 +179,16 @@ public class RagServiceImpl implements RagService {
     @Override
     public Flux<ChatResponse> multi(String question, MultipartFile file) {
         String systemPrompt = "你需要根据图片准确回答用户的问题。";
-
-        try {
-            UserMessage userMessage = new UserMessage(question, List.of(new Media(MimeTypeUtils.IMAGE_JPEG, new URL(minioUtil.uploadFile(file)))));
-            return ChatClient.create(deepSeekClient)
-                .prompt(new Prompt(userMessage))
-                .system(systemPrompt)
-                //.tools(functionBeanNames)
-                // 历史问答
-                .advisors(advisorSpec -> fillHistory(advisorSpec, "12345"))
-                .stream()
-                .chatResponse();
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-
+        //String imgUrl = minioUtil.uploadFile(file);
+        //String imageToBase64 = FileUtil.encodeImageToBase64(imgUrl);
+        UserMessage userMessage = new UserMessage(question, List.of(new Media(MimeTypeUtils.IMAGE_PNG, img)));
+        return ChatClient.create(visionClient)
+            .prompt(new Prompt(userMessage))
+            .system(systemPrompt)
+            //.tools(functionBeanNames)
+            // 历史问答
+            //.advisors(advisorSpec -> fillHistory(advisorSpec, "12345"))
+            .stream()
+            .chatResponse();
     }
 }

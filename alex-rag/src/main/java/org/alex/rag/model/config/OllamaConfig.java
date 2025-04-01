@@ -60,6 +60,21 @@ public class OllamaConfig {
                 ModelManagementOptions.defaults());
     }
 
+    @Bean(name = "visionClient")
+    public OllamaChatModel visionClient()
+    {
+        var ollamaApi = new OllamaApi(baseUrl);
+
+        return new OllamaChatModel(ollamaApi,
+                OllamaOptions.builder()
+                        .model(modelProperties.getLlava())
+                        .temperature(modelProperties.getLlavaTemperature())
+                        .build(),
+                ToolCallingManager.builder().build(),
+                ObservationRegistry.NOOP,
+                ModelManagementOptions.defaults());
+    }
+
     @Bean(name = "nomicEmbeddingClient")
     @Primary
     public OllamaEmbeddingModel nomicEmbeddingClient() {

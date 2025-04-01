@@ -19,7 +19,11 @@ public class ModelProperties {
 
     private String qwen;
 
+    private String llava;
+
     private Double deepSeekTemperature;
 
     private Double qwenTemperature;
+
+    private Double llavaTemperature;
 }

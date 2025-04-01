@@ -31,16 +31,17 @@ public class MinioUtil {
      */
     public String uploadFile(MultipartFile file) {
         try {
-            String objectName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            String cleanFileName = cleanFileName(file.getOriginalFilename());
+
             minioClient.putObject(
                 PutObjectArgs.builder()
                     .bucket(minioProperties.getBucketName())
-                    .object(objectName)
+                    .object(cleanFileName)
                     .stream(file.getInputStream(), file.getSize(), -1)
                     .contentType(file.getContentType())
                     .build()
             );
-            return getFileUrl(objectName);
+            return getFileUrl(cleanFileName);
         } catch (Exception e) {
             throw new RuntimeException("上传失败", e);
         }
@@ -48,15 +49,16 @@ public class MinioUtil {
 
     public String uploadFile(File file, String fileName) {
         try (FileInputStream fileInputStream = new FileInputStream(file)){
+            String cleanFileName = cleanFileName(fileName);
             minioClient.putObject(
                 PutObjectArgs.builder()
                     .bucket(minioProperties.getBucketName())
-                    .object(fileName)
+                    .object(cleanFileName)
                     .stream(fileInputStream, file.length(), -1)
                     .contentType("application/octet-stream")
                     .build()
             );
-            return getFileUrl(fileName);
+            return getFileUrl(cleanFileName);
         } catch (Exception e) {
             throw new RuntimeException("上传失败", e);
         }
@@ -97,7 +99,20 @@ public class MinioUtil {
     /**
      * 生成文件的访问 URL
      */
-    public String getFileUrl(String objectName) {
+    private String getFileUrl(String objectName) {
         return String.format("%s/%s/%s", minioProperties.getPublicUrl(), minioProperties.getBucketName(), objectName);
+    }
+
+    private static String cleanFileName(String fileName) {
+
+        // 获取文件扩展名
+        String extension = "";
+        int dotIndex = fileName.lastIndexOf(".");
+        if (dotIndex != -1) {
+            extension = fileName.substring(dotIndex);
+        }
+
+        // 生成 UUID 并拼接扩展名
+        return UUID.randomUUID() + extension;
     }
 }
